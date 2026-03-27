@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Felito Barber Studio — Premium Experience</title>
+  <meta name="description" content="Felito Barber Studio. Precisión, estilo e identidad. Barbería premium en Montevideo con sedes en Cordón y Punta Carretas." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#090909',
+            graphite: '#111214',
+            charcoal: '#17191C',
+            mist: '#A4AAB0',
+            platinum: '#EBECE8',
+            lime: '#B6FF00',
+            acid: '#D6FF74'
+          },
+          boxShadow: {
+            glass: '0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08)',
+            lime: '0 0 40px rgba(182,255,0,.18)',
+            metal: '0 20px 80px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.05)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg: #090909;
+      --panel: rgba(255,255,255,.05);
+      --stroke: rgba(255,255,255,.08);
+      --text: #EBECE8;
+      --muted: #9BA2A8;
+      --accent: #B6FF00;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(182,255,0,.08), transparent 24%),
+        radial-gradient(circle at 80% 0%, rgba(255,255,255,.06), transparent 20%),
+        linear-gradient(180deg, #0A0A0A 0%, #090909 48%, #0F1012 100%);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Syne', sans-serif;
+      letter-spacing: -0.04em;
+    }
+
+    .grain::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      pointer-events: none;
+      opacity: .14;
+      mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='.32'/></svg>");
+    }
+
+    .cursor, .cursor-dot {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 90;
+      pointer-events: none;
+      border-radius: 999px;
+      mix-blend-mode: difference;
+      will-change: transform;
+    }
+
+    .cursor {
+      width: 30px;
+      height: 30px;
+      border: 1px solid rgba(255,255,255,.95);
+      transform: translate(-50%, -50%);
+      transition: width .25s ease, height .25s ease, background .25s ease, border-color .25s ease;
+    }
+
+    .cursor.active {
+      width: 56px;
+      height: 56px;
+      background: rgba(255,255,255,.08);
+      border-color: rgba(182,255,0,.95);
+    }
+
+    .cursor-dot {
+      width: 8px;
+      height: 8px;
+      background: rgba(255,255,255,.98);
+      transform: translate(-50%, -50%);
+    }
+
+    .glass {
+      background: linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(18px) saturate(125%);
+      -webkit-backdrop-filter: blur(18px) saturate(125%);
+      box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+    }
+
+    .text-metal {
+      background: linear-gradient(180deg, #FFFFFF 0%, #D3D8DC 40%, #8D949B 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .text-acid {
+      background: linear-gradient(180deg, #DFFF97 0%, #B6FF00 90%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), rgba(182,255,0,.3), rgba(255,255,255,.12), transparent);
+    }
+
+    .nav-blur {
+      background: rgba(10,10,10,.45);
+      backdrop-filter: blur(16px) saturate(120%);
+      -webkit-backdrop-filter: blur(16px) saturate(120%);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .section-reveal {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+
+    .metal-card {
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+    }
+
+    .metal-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,0) 25%, rgba(182,255,0,.08) 55%, rgba(255,255,255,.08));
+      opacity: 0;
+      transition: opacity .25s ease;
+      pointer-events: none;
+    }
+
+    .metal-card:hover::before { opacity: 1; }
+    .metal-card:hover {
+      border-color: rgba(182,255,0,.22);
+      box-shadow: 0 18px 50px rgba(0,0,0,.34), 0 0 30px rgba(182,255,0,.08);
+    }
+
+    .liquid-btn {
+      position: relative;
+      isolation: isolate;
+      border-radius: 999px;
+      padding: 1px;
+      overflow: hidden;
+      background: conic-gradient(from 120deg, rgba(255,255,255,.22), rgba(182,255,0,.95), rgba(255,255,255,.22), rgba(255,255,255,.08), rgba(182,255,0,.85), rgba(255,255,255,.18));
+      box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 16px 40px rgba(0,0,0,.34), 0 0 40px rgba(182,255,0,.1);
+    }
+
+    .liquid-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: conic-gradient(from 0deg, transparent, rgba(255,255,255,.45), transparent 30%);
+      animation: spin 6s linear infinite;
+      opacity: .55;
+      z-index: 0;
+    }
+
+    .liquid-btn::after {
+      content: '';
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      top: 5%;
+      height: 48%;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0));
+      filter: blur(8px);
+      z-index: 0;
+    }
+
+    .liquid-btn > span {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .7rem;
+      min-width: 188px;
+      padding: .95rem 1.35rem;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(19,19,19,.93), rgba(8,8,8,.93));
+    }
+
+    .shimmer-line { position: relative; overflow: hidden; }
+    .shimmer-line::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+      animation: sweep 5s linear infinite;
+    }
+
+    .image-mask {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.5rem;
+    }
+
+    .image-mask img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: grayscale(100%) contrast(114%) brightness(.72);
+      transform: scale(1.02);
+      transition: transform .8s ease, filter .45s ease;
+    }
+
+    .image-mask:hover img {
+      transform: scale(1.08);
+      filter: grayscale(100%) contrast(124%) brightness(.82);
+    }
+
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at center, black 45%, transparent 88%);
+      -webkit-mask-image: radial-gradient(circle at center, black 45%, transparent 88%);
+    }
+
+    .spotlight {
+      position: absolute;
+      width: 36rem;
+      height: 36rem;
+      border-radius: 999px;
+      filter: blur(36px);
+      background: radial-gradient(circle, rgba(182,255,0,.12), transparent 60%);
+      pointer-events: none;
+    }
+
+    .logo-wordmark {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      letter-spacing: -0.06em;
+      line-height: .9;
+    }
+
+    .logo-wordmark .accent { color: #B6FF00; }
+
+    canvas#liquid-bg {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      opacity: .65;
+      pointer-events: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes sweep { 100% { transform: translateX(100%); } }
+
+    @media (max-width: 768px) {
+      body { cursor: auto; }
+      .cursor, .cursor-dot { display: none; }
+    }
+  </style>
+</head>
+<body id="top" class="grain selection:bg-lime/20 selection:text-white">
+  <div class="cursor"></div>
+  <div class="cursor-dot"></div>
+  <canvas id="liquid-bg" resize></canvas>
+
+  <header class="fixed top-0 left-0 right-0 z-50 nav-blur">
+    <div class="max-w-7xl mx-auto px-6 md:px-8 py-4 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-4 magnetic" data-hover>
+        <div>
+          <div class="logo-wordmark text-3xl md:text-4xl leading-none">
+            FE<span class="accent">LI</span>TO
+          </div>
+          <div class="uppercase tracking-[0.45em] text-[10px] md:text-xs text-lime/80 ml-1">Barber Studio</div>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm text-white/78">
+        <a href="#servicios" class="hover:text-lime transition-colors" data-hover>Servicios</a>
+        <a href="#sedes" class="hover:text-lime transition-colors" data-hover>Sedes</a>
+        <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors" data-hover>Reservas</a>
+        <a href="#reviews" class="hover:text-lime transition-colors" data-hover>Reseñas</a>
+      </nav>
+
+      <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover>
+        <span>
+          <i data-lucide="calendar-days" class="w-4 h-4"></i>
+          Reservar turno
+        </span>
+      </a>
+    </div>
+  </header>
+
+  <main class="relative z-10">
+    <section class="relative min-h-screen flex items-center overflow-hidden">
+      <div class="spotlight top-[8%] left-[-10%]"></div>
+      <div class="spotlight bottom-[-15%] right-[-10%]"></div>
+      <div class="hero-grid absolute inset-0 opacity-50"></div>
+
+      <div class="max-w-7xl mx-auto px-6 md:px-8 pt-32 pb-20 w-full">
+        <div class="grid lg:grid-cols-[1.15fr_.85fr] gap-10 items-center">
+          <div>
+            <div class="inline-flex items-center gap-3 glass rounded-full px-4 py-2 text-xs uppercase tracking-[0.25em] text-white/70 mb-8 section-reveal">
+              <span class="w-2 h-2 rounded-full bg-lime shadow-[0_0_20px_rgba(182,255,0,.8)]"></span>
+              Montevideo · Cordón & Punta Carretas
+            </div>
+
+            <h1 class="section-reveal text-[clamp(3.6rem,9vw,8.6rem)] leading-[0.88] max-w-4xl font-display">
+              <span class="text-metal block">Precisión.</span>
+              <span class="text-acid block">Estilo.</span>
+              <span class="text-metal block">Identidad.</span>
+            </h1>
+
+            <p class="section-reveal mt-8 max-w-2xl text-lg md:text-xl text-white/68 leading-relaxed">
+              Una experiencia de grooming premium donde el corte, la barba y la asesoría de imagen se encuentran con una ejecución impecable, contemporánea y profundamente cuidada.
+            </p>
+
+            <div class="section-reveal mt-10 flex flex-col sm:flex-row gap-4">
+              <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover>
+                <span>
+                  <i data-lucide="scissors-line-dashed" class="w-4 h-4"></i>
+                  Reservar ahora
+                </span>
+              </a>
+              <a href="#servicios" class="glass rounded-full px-6 py-4 inline-flex items-center justify-center gap-3 text-white/84 hover:text-white transition-all magnetic" data-hover>
+                <i data-lucide="arrow-down-right" class="w-4 h-4"></i>
+                Ver servicios
+              </a>
+            </div>
+
+            <div class="section-reveal mt-12 grid sm:grid-cols-3 gap-4 max-w-3xl">
+              <div class="glass rounded-3xl p-5">
+                <div class="text-3xl font-display text-acid">5.0★</div>
+                <div class="text-sm text-white/60 mt-1">Reputación destacada</div>
+              </div>
+              <div class="glass rounded-3xl p-5">
+                <div class="text-3xl font-display text-metal">2</div>
+                <div class="text-sm text-white/60 mt-1">Sedes en Montevideo</div>
+              </div>
+              <div class="glass rounded-3xl p-5">
+                <div class="text-3xl font-display text-metal">Online</div>
+                <div class="text-sm text-white/60 mt-1">Reservas rápidas</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-reveal">
+            <div class="glass rounded-[2rem] p-3 md:p-4 shadow-metal metal-card">
+              <div class="image-mask aspect-[4/5] bg-white/5 rounded-[1.6rem]">
+                <img src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=1200&q=80" alt="Barbería premium en blanco y negro" />
+              </div>
+              <div class="grid grid-cols-2 gap-3 mt-3">
+                <div class="glass rounded-2xl p-4">
+                  <div class="text-xs uppercase tracking-[0.25em] text-white/50">Signature</div>
+                  <div class="mt-2 font-medium">Fades, taper y detalle fino</div>
+                </div>
+                <div class="glass rounded-2xl p-4">
+                  <div class="text-xs uppercase tracking-[0.25em] text-white/50">Studio feel</div>
+                  <div class="mt-2 font-medium">Ambiente moderno y profesional</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-24 md:py-32 relative">
+      <div class="max-w-7xl mx-auto px-6 md:px-8">
+        <div class="divider mb-14"></div>
+        <div class="grid lg:grid-cols-[.9fr_1.1fr] gap-10 items-start">
+          <div class="section-reveal">
+            <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Manifiesto</span>
+            <h2 class="mt-4 text-4xl md:text-6xl font-display leading-[0.95] max-w-xl">
+              Más que una barbería, una experiencia de estilo.
+            </h2>
+          </div>
+          <div class="section-reveal glass rounded-[2rem] p-8 md:p-10 text-white/72 leading-relaxed text-lg">
+            Felito Barber Studio proyecta una identidad sobria, precisa y contemporánea. Cada servicio está pensado para elevar la imagen personal con criterio estético, técnica sólida y una atención que transmite confianza desde el primer contacto.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="servicios" class="py-24 md:py-32 relative">
+      <div class="max-w-7xl mx-auto px-6 md:px-8">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
+          <div class="section-reveal">
+            <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Servicios</span>
+            <h2 class="mt-4 text-4xl md:text-6xl font-display">Arquitectura de imagen</h2>
+          </div>
+          <p class="section-reveal max-w-xl text-white/62 text-lg">
+            Un sistema de servicios diseñado para clientes que valoran el detalle, la consistencia y una ejecución prolija en cada visita.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
+          <article class="section-reveal metal-card glass rounded-[2rem] p-7">
+            <div class="w-12 h-12 rounded-2xl glass flex items-center justify-center mb-6"><i data-lucide="scissors" class="w-5 h-5"></i></div>
+            <h3 class="text-2xl font-display">Corte de cabello</h3>
+            <p class="mt-4 text-white/62 leading-relaxed">Cortes clásicos y modernos con terminación limpia, lectura facial y ajuste al estilo del cliente.</p>
+          </article>
+
+          <article class="section-reveal metal-card glass rounded-[2rem] p-7">
+            <div class="w-12 h-12 rounded-2xl glass flex items-center justify-center mb-6"><i data-lucide="badge-check" class="w-5 h-5"></i></div>
+            <h3 class="text-2xl font-display">Barba &amp; perfilado</h3>
+            <p class="mt-4 text-white/62 leading-relaxed">Definición de contornos, simetría y pulido visual para una presencia más cuidada y elegante.</p>
+          </article>
+
+          <article class="section-reveal metal-card glass rounded-[2rem] p-7">
+            <div class="w-12 h-12 rounded-2xl glass flex items-center justify-center mb-6"><i data-lucide="sparkles" class="w-5 h-5"></i></div>
+            <h3 class="text-2xl font-display">Corte + barba</h3>
+            <p class="mt-4 text-white/62 leading-relaxed">Servicio combinado para una actualización integral, consistente y lista para el día a día o una ocasión especial.</p>
+          </article>
+
+          <article class="section-reveal metal-card glass rounded-[2rem] p-7">
+            <div class="w-12 h-12 rounded-2xl glass flex items-center justify-center mb-6"><i data-lucide="user-round-search" class="w-5 h-5"></i></div>
+            <h3 class="text-2xl font-display">Asesoramiento</h3>
+            <p class="mt-4 text-white/62 leading-relaxed">Recomendaciones de imagen personal para encontrar el look que mejor dialoga con tus rasgos y estilo de vida.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="sedes" class="py-24 md:py-32 relative">
+      <div class="max-w-7xl mx-auto px-6 md:px-8">
+        <div class="section-reveal mb-14">
+          <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Sedes</span>
+          <h2 class="mt-4 text-4xl md:text-6xl font-display">Dos ubicaciones. Misma excelencia.</h2>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-6">
+          <article class="section-reveal glass metal-card rounded-[2rem] p-8 md:p-10">
+            <div class="flex items-start justify-between gap-6">
+              <div>
+                <div class="text-xs uppercase tracking-[0.35em] text-lime/80">Sede 01</div>
+                <h3 class="mt-4 text-3xl font-display">Cordón</h3>
+                <p class="mt-4 text-white/65 text-lg">José Enrique Rodó 1969</p>
+              </div>
+              <div class="glass rounded-2xl px-4 py-3 text-sm">5.0 ★</div>
+            </div>
+            <div class="divider my-8"></div>
+            <p class="text-white/60 leading-relaxed">Una ubicación estratégica para quienes buscan una experiencia premium en el corazón de la ciudad, con reservas ágiles y atención consistente.</p>
+            <div class="mt-8 flex flex-wrap gap-4">
+              <a href="https://book.weibook.co/branch/felito-barber-studio-sede-1" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover><span>Reservar en Cordón</span></a>
+              <a href="https://maps.google.com/?q=José+Enrique+Rodó+1969,+Montevideo" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-5 py-4 inline-flex items-center gap-3 magnetic" data-hover>
+                <i data-lucide="map-pinned" class="w-4 h-4"></i> Ver mapa
+              </a>
+            </div>
+          </article>
+
+          <article class="section-reveal glass metal-card rounded-[2rem] p-8 md:p-10">
+            <div class="flex items-start justify-between gap-6">
+              <div>
+                <div class="text-xs uppercase tracking-[0.35em] text-lime/80">Sede 02</div>
+                <h3 class="mt-4 text-3xl font-display">Punta Carretas</h3>
+                <p class="mt-4 text-white/65 text-lg">Luis Franzini 938</p>
+              </div>
+              <div class="glass rounded-2xl px-4 py-3 text-sm">5.0 ★</div>
+            </div>
+            <div class="divider my-8"></div>
+            <p class="text-white/60 leading-relaxed">Pensada para un público que valora el diseño, la prolijidad y un servicio de grooming alineado con una estética urbana sofisticada.</p>
+            <div class="mt-8 flex flex-wrap gap-4">
+              <a href="https://book.weibook.co/branch/felito-barber-studio-punta-carretas" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover><span>Reservar en Punta Carretas</span></a>
+              <a href="https://maps.google.com/?q=Luis+Franzini+938,+Montevideo" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-5 py-4 inline-flex items-center gap-3 magnetic" data-hover>
+                <i data-lucide="map-pinned" class="w-4 h-4"></i> Ver mapa
+              </a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="reserva" class="py-24 md:py-32 relative">
+      <div class="max-w-7xl mx-auto px-6 md:px-8">
+        <div class="grid lg:grid-cols-[1fr_.9fr] gap-8 items-stretch">
+          <div class="section-reveal glass rounded-[2rem] p-8 md:p-12 relative overflow-hidden">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(182,255,0,.12),transparent_34%)]"></div>
+            <div class="relative z-10">
+              <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Reservas</span>
+              <h2 class="mt-4 text-4xl md:text-6xl font-display max-w-2xl">Reservá tu turno en segundos.</h2>
+              <p class="mt-6 max-w-2xl text-lg text-white/66 leading-relaxed">
+                Integración pensada para dirigir al usuario a la plataforma de reservas, donde puede consultar disponibilidad en tiempo real, elegir barbero y gestionar su cita con fluidez.
+              </p>
+
+              <div class="mt-10 grid sm:grid-cols-3 gap-4">
+                <div class="glass rounded-2xl p-5">
+                  <div class="text-sm uppercase tracking-[0.25em] text-white/45">01</div>
+                  <div class="mt-2 font-medium">Elegí sede</div>
+                </div>
+                <div class="glass rounded-2xl p-5">
+                  <div class="text-sm uppercase tracking-[0.25em] text-white/45">02</div>
+                  <div class="mt-2 font-medium">Seleccioná barbero</div>
+                </div>
+                <div class="glass rounded-2xl p-5">
+                  <div class="text-sm uppercase tracking-[0.25em] text-white/45">03</div>
+                  <div class="mt-2 font-medium">Confirmá tu turno</div>
+                </div>
+              </div>
+
+              <div class="mt-10 flex flex-col sm:flex-row gap-4">
+                <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover>
+                  <span>
+                    <i data-lucide="calendar-plus-2" class="w-4 h-4"></i>
+                    Abrir reservas
+                  </span>
+                </a>
+                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-6 py-4 inline-flex items-center justify-center gap-3 magnetic" data-hover>
+                  <i data-lucide="instagram" class="w-4 h-4"></i>
+                  Ver Instagram
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-reveal glass rounded-[2rem] p-4 md:p-5 shadow-metal">
+            <div class="image-mask rounded-[1.5rem] aspect-[4/5]">
+              <img src="https://images.unsplash.com/photo-1585747860715-ebba7e41a0d0?auto=format&fit=crop&w=1200&q=80" alt="Detalle de barbería premium" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reviews" class="py-24 md:py-32 relative">
+      <div class="max-w-7xl mx-auto px-6 md:px-8">
+        <div class="section-reveal mb-14 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Prueba social</span>
+            <h2 class="mt-4 text-4xl md:text-6xl font-display">Confianza visible.</h2>
+          </div>
+          <div class="glass rounded-full px-5 py-3 text-sm shimmer-line">Calificación destacada: 5.0 estrellas</div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-5">
+          <article class="section-reveal glass metal-card rounded-[2rem] p-7">
+            <div class="flex items-center gap-1 text-lime mb-5">★★★★★</div>
+            <p class="text-white/72 leading-relaxed">“Se nota el criterio, la técnica y la prolijidad. No es solo un corte: es una experiencia completa.”</p>
+            <div class="mt-6 text-sm uppercase tracking-[0.25em] text-white/40">Cliente frecuente</div>
+          </article>
+
+          <article class="section-reveal glass metal-card rounded-[2rem] p-7">
+            <div class="flex items-center gap-1 text-lime mb-5">★★★★★</div>
+            <p class="text-white/72 leading-relaxed">“Reservar fue rápido, el ambiente impecable y el resultado final superó expectativas.”</p>
+            <div class="mt-6 text-sm uppercase tracking-[0.25em] text-white/40">Reseña verificada</div>
+          </article>
+
+          <article class="section-reveal glass metal-card rounded-[2rem] p-7">
+            <div class="flex items-center gap-1 text-lime mb-5">★★★★★</div>
+            <p class="text-white/72 leading-relaxed">“Una barbería con identidad. Todo se siente cuidado: desde la atención hasta el último detalle visual.”</p>
+            <div class="mt-6 text-sm uppercase tracking-[0.25em] text-white/40">Cliente nuevo</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-16 md:py-24">
+      <div class="max-w-7xl mx-auto px-6 md:px-8">
+        <div class="glass rounded-[2rem] p-8 md:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 section-reveal">
+          <div>
+            <div class="text-xs uppercase tracking-[0.35em] text-lime/80">Cierre</div>
+            <h2 class="mt-3 text-3xl md:text-5xl font-display max-w-2xl">Diseñado para convertir visitas en reservas.</h2>
+          </div>
+          <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover><span>Agendar experiencia</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="relative z-10 border-t border-white/6">
+    <div class="max-w-7xl mx-auto px-6 md:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div>
+        <div class="logo-wordmark text-3xl leading-none">FE<span class="accent">LI</span>TO</div>
+        <div class="uppercase tracking-[0.42em] text-[10px] text-lime/80 ml-1 mt-1">Barber Studio</div>
+      </div>
+
+      <div class="flex items-center gap-4 text-white/55 text-sm">
+        <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors" data-hover>Instagram</a>
+        <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors" data-hover>Reservas</a>
+      </div>
+
+      <p class="text-sm text-white/38">© 2026 Felito Barber Studio. Crafted for a premium grooming brand.</p>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const cursor = document.querySelector('.cursor');
+    const cursorDot = document.querySelector('.cursor-dot');
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let dotX = mouseX, dotY = mouseY, ringX = mouseX, ringY = mouseY;
+
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    function animateCursor() {
+      if (!cursor || !cursorDot) return;
+      dotX += (mouseX - dotX) * 0.35;
+      dotY += (mouseY - dotY) * 0.35;
+      ringX += (mouseX - ringX) * 0.18;
+      ringY += (mouseY - ringY) * 0.18;
+      cursorDot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%)`;
+      cursor.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    document.querySelectorAll('[data-hover], a, button').forEach((el) => {
+      el.addEventListener('mouseenter', () => cursor && cursor.classList.add('active'));
+      el.addEventListener('mouseleave', () => cursor && cursor.classList.remove('active'));
+    });
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.utils.toArray('.section-reveal').forEach((el, index) => {
+      gsap.to(el, {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out',
+        delay: index < 5 ? index * 0.08 : 0,
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 88%',
+          once: true
+        }
+      });
+    });
+
+    document.querySelectorAll('.magnetic').forEach((el) => {
+      const strength = 18;
+      el.addEventListener('mousemove', (e) => {
+        const rect = el.getBoundingClientRect();
+        const relX = e.clientX - rect.left - rect.width / 2;
+        const relY = e.clientY - rect.top - rect.height / 2;
+        gsap.to(el, {
+          x: (relX / rect.width) * strength,
+          y: (relY / rect.height) * strength,
+          duration: 0.35,
+          ease: 'power3.out'
+        });
+      });
+      el.addEventListener('mouseleave', () => {
+        gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.35)' });
+      });
+    });
+
+    document.querySelectorAll('.metal-card').forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width;
+        const py = (e.clientY - rect.top) / rect.height;
+        const rotateY = (px - 0.5) * 10;
+        const rotateX = -(py - 0.5) * 10;
+        gsap.to(card, {
+          rotateX,
+          rotateY,
+          transformPerspective: 1000,
+          duration: 0.35,
+          ease: 'power2.out'
+        });
+      });
+      card.addEventListener('mouseleave', () => {
+        gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.45, ease: 'power3.out' });
+      });
+    });
+
+    if (window.paper) {
+      paper.setup(document.getElementById('liquid-bg'));
+      const { Path, Point, view } = paper;
+      const blobs = [];
+      const blobCount = window.innerWidth < 768 ? 3 : 5;
+
+      for (let i = 0; i < blobCount; i++) {
+        const radius = 120 + Math.random() * 160;
+        const path = new Path.Circle({
+          center: new Point(Math.random() * view.size.width, Math.random() * view.size.height),
+          radius,
+          fillColor: i % 2 === 0 ? 'rgba(182,255,0,0.045)' : 'rgba(255,255,255,0.035)'
+        });
+        path.smooth();
+        blobs.push({
+          path,
+          offset: Math.random() * 1000,
+          amplitude: 18 + Math.random() * 30,
+          base: path.position.clone()
+        });
+      }
+
+      paper.view.onFrame = (event) => {
+        blobs.forEach((blob, i) => {
+          const t = event.time + blob.offset;
+          const driftX = Math.cos(t * (1 + i * 0.1)) * blob.amplitude;
+          const driftY = Math.sin(t * (1.1 + i * 0.12)) * blob.amplitude;
+          const pullX = (mouseX - view.size.width / 2) * 0.01 * (i % 2 === 0 ? 1 : -0.5);
+          const pullY = (mouseY - view.size.height / 2) * 0.01 * (i % 2 === 0 ? 0.65 : -0.35);
+          blob.path.position = blob.base.add(new Point(driftX + pullX, driftY + pullY));
+          blob.path.scale(1 + Math.sin(t * 1.4) * 0.0009);
+        });
+      };
+
+      window.addEventListener('resize', () => {
+        paper.view.viewSize = new paper.Size(window.innerWidth, window.innerHeight);
+      });
+    }
+  </script>
+</body>
+</html>
