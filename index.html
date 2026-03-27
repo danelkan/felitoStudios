@@ -329,13 +329,7 @@
   </header>
 
   <main class="relative z-10">
-    <!--
-      On mobile devices the hero section content was vertically centered (due to `items-center`) which made the page
-      appear as if it opened in the middle instead of starting at the top. To improve the user experience on
-      smaller screens, the flex alignment is adjusted to align items at the top (`items-start`) on mobile while
-      preserving the centered alignment (`md:items-center`) on larger viewports.
-    -->
-    <section class="relative min-h-screen flex items-start md:items-center overflow-hidden">
+    <section class="relative min-h-screen flex items-center overflow-hidden">
       <div class="spotlight top-[8%] left-[-10%]"></div>
       <div class="spotlight bottom-[-15%] right-[-10%]"></div>
       <div class="hero-grid absolute inset-0 opacity-50"></div>
@@ -627,6 +621,19 @@
   </footer>
 
   <script>
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    window.addEventListener('load', () => {
+      window.scrollTo(0, 0);
+      setTimeout(() => window.scrollTo(0, 0), 60);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.scrollTo(0, 0);
+    });
+
     lucide.createIcons();
 
     const cursor = document.querySelector('.cursor');
