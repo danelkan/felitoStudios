@@ -786,32 +786,113 @@
       </div>
     </section>
 
-    <section class="py-16 md:py-24">
-      <div class="max-w-7xl mx-auto px-6 md:px-8">
-        <div class="glass rounded-[2rem] p-8 md:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 section-reveal">
-          <div>
-            <div class="text-xs uppercase tracking-[0.35em] text-lime/80">Cierre</div>
-            <h2 class="mt-3 text-3xl md:text-5xl font-display max-w-2xl">Diseñado para convertir visitas en reservas.</h2>
-          </div>
-          <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover><span>Agendar experiencia</span></a>
+    <!-- CTA Final -->
+    <section class="relative py-24 md:py-36 overflow-hidden">
+      <!-- Spotlight background -->
+      <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div style="width:700px;height:700px;background:radial-gradient(circle,rgba(182,255,0,.07) 0%,transparent 70%);border-radius:50%;"></div>
+      </div>
+
+      <div class="relative z-10 max-w-4xl mx-auto px-6 md:px-8 text-center section-reveal">
+        <div class="inline-flex items-center gap-2 glass rounded-full px-4 py-2 text-xs uppercase tracking-[0.35em] text-lime/80 mb-8">
+          <span class="w-1.5 h-1.5 rounded-full bg-lime inline-block"></span>
+          Reservas disponibles
+        </div>
+
+        <h2 class="font-display text-5xl md:text-7xl lg:text-8xl text-white mb-6" style="line-height:1.02;">
+          Tu mejor versión<br/>
+          <span style="color:#B6FF00;">te está esperando.</span>
+        </h2>
+
+        <p class="text-white/55 text-lg md:text-xl max-w-xl mx-auto mb-12 leading-relaxed">
+          Reservá en segundos. Viví la diferencia en el sillón.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            href="https://book.weibook.co/felito-barber-studio"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="liquid-btn magnetic"
+            data-hover
+          ><span>Reservar turno</span></a>
+
+          <a href="#sedes" class="glass rounded-full px-7 py-4 text-sm font-medium text-white/70 hover:text-white transition-colors magnetic" data-hover>
+            Ver sedes →
+          </a>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="relative z-10 border-t border-white/6">
-    <div class="max-w-7xl mx-auto px-6 md:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-      <div>
-        <div class="logo-wordmark text-3xl">FE<span class="accent">LI</span>TO</div>
-        <div class="uppercase tracking-[0.42em] text-[10px] text-lime/80 ml-1 mt-1">Barber Studio</div>
+  <footer class="relative z-10 border-t border-white/6 mt-4">
+    <div class="max-w-7xl mx-auto px-6 md:px-8 pt-14 pb-10">
+
+      <!-- Top row -->
+      <div class="flex flex-col lg:flex-row items-start justify-between gap-12 mb-12">
+
+        <!-- Brand -->
+        <div class="shrink-0">
+          <div class="logo-wordmark text-4xl">FE<span class="accent">LI</span>TO</div>
+          <div class="uppercase tracking-[0.42em] text-[10px] text-lime/70 ml-1 mt-1.5 mb-4">Barber Studio</div>
+          <p class="text-white/40 text-sm max-w-[18rem] leading-relaxed">
+            Precisión, estilo e identidad.<br/>Barbería premium en Montevideo.
+          </p>
+        </div>
+
+        <!-- Nav links -->
+        <div class="flex flex-wrap gap-x-16 gap-y-8">
+          <div>
+            <div class="text-xs uppercase tracking-[0.3em] text-white/30 mb-4">Menú</div>
+            <ul class="space-y-3 text-sm text-white/55">
+              <li><a href="#servicios" class="hover:text-lime transition-colors" data-hover>Servicios</a></li>
+              <li><a href="#barberos" class="hover:text-lime transition-colors" data-hover>Barberos</a></li>
+              <li><a href="#reservas" class="hover:text-lime transition-colors" data-hover>Reservas</a></li>
+              <li><a href="#resenas" class="hover:text-lime transition-colors" data-hover>Reseñas</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="text-xs uppercase tracking-[0.3em] text-white/30 mb-4">Sedes</div>
+            <ul class="space-y-3 text-sm text-white/55">
+              <li>
+                <a href="https://maps.app.goo.gl/GP3hRJw9NedJgwLM9" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors" data-hover>
+                  Cordón
+                </a>
+              </li>
+              <li>
+                <a href="https://maps.app.goo.gl/7zQtRn3iibWjNiWW7" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors" data-hover>
+                  Punta Carretas
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="text-xs uppercase tracking-[0.3em] text-white/30 mb-4">Contacto</div>
+            <ul class="space-y-3 text-sm text-white/55">
+              <li>
+                <a href="https://www.instagram.com/felitobarber" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors inline-flex items-center gap-2" data-hover>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                  Instagram
+                </a>
+              </li>
+              <li>
+                <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors" data-hover>
+                  Reservas online
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
 
-      <div class="flex items-center gap-4 text-white/55 text-sm">
-        <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors" data-hover>Instagram</a>
-        <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors" data-hover>Reservas</a>
+      <!-- Divider -->
+      <div class="border-t border-white/6 pt-7 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-xs text-white/28 tracking-wide">© 2026 Felito Barber Studio — Montevideo, Uruguay</p>
+        <p class="text-xs text-white/20">Hecho con precisión.</p>
       </div>
 
-      <p class="text-sm text-white/38">© 2026 Felito Barber Studio. Crafted for a premium grooming brand.</p>
     </div>
   </footer>
 
