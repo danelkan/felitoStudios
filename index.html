@@ -47,6 +47,8 @@
       --text: #EBECE8;
       --muted: #9BA2A8;
       --accent: #B6FF00;
+      --display-tracking: -0.04em;
+      --display-leading: 1.06;
     }
 
     html { scroll-behavior: smooth; }
@@ -58,13 +60,21 @@
         radial-gradient(circle at 80% 0%, rgba(255,255,255,.06), transparent 20%),
         linear-gradient(180deg, #0A0A0A 0%, #090909 48%, #0F1012 100%);
       color: var(--text);
-      overflow-x: hidden;
+      overflow-x: clip;
       cursor: none;
     }
 
-    h1, h2, h3, h4, .font-display {
+    a, button, [data-hover], input, select, textarea, label {
+      cursor: none;
+    }
+
+    h1, h2, h3, h4, h5, h6, .font-display {
       font-family: 'Syne', sans-serif;
-      letter-spacing: -0.04em;
+      letter-spacing: var(--display-tracking);
+      line-height: var(--display-leading);
+      overflow: visible;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
     }
 
     .grain::before {
@@ -109,6 +119,10 @@
       height: 8px;
       background: rgba(255,255,255,.98);
       transform: translate(-50%, -50%);
+    }
+
+    .cursor {
+      display: none;
     }
 
     .glass {
@@ -160,7 +174,7 @@
     .metal-card::before {
       content: '';
       position: absolute;
-      inset: -1px;
+      inset: 0;
       background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,0) 25%, rgba(182,255,0,.08) 55%, rgba(255,255,255,.08));
       opacity: 0;
       transition: opacity .25s ease;
@@ -219,6 +233,19 @@
       background: linear-gradient(180deg, rgba(19,19,19,.93), rgba(8,8,8,.93));
     }
 
+    .slide-reserve { touch-action: pan-y; }
+    .slide-reserve .slide-track,
+    .slide-reserve .slide-thumb,
+    .slide-reserve .slide-label,
+    .slide-reserve .slide-hint {
+      display: none;
+    }
+
+    .slide-reserve.is-complete .slide-label,
+    .slide-reserve.is-complete .slide-hint {
+      opacity: 0;
+    }
+
     .shimmer-line { position: relative; overflow: hidden; }
     .shimmer-line::after {
       content: '';
@@ -272,7 +299,7 @@
       font-family: 'Syne', sans-serif;
       font-weight: 800;
       letter-spacing: -0.06em;
-      line-height: .9;
+      line-height: 1.05;
     }
 
     .logo-wordmark .accent { color: #B6FF00; }
@@ -287,12 +314,94 @@
       pointer-events: none;
     }
 
+    .review-card {
+      overflow: hidden;
+      border: 1px solid rgba(182,255,0,.28) !important;
+      box-shadow: 0 0 28px rgba(182,255,0,.07), 0 24px 64px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08) !important;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .review-card .review-body {
+      flex: 1;
+    }
+
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes sweep { 100% { transform: translateX(100%); } }
 
-    @media (max-width: 768px) {
+    @media (pointer: coarse) {
       body { cursor: auto; }
       .cursor, .cursor-dot { display: none; }
+
+      .slide-reserve {
+        width: min(100%, 22rem);
+      }
+
+      .slide-reserve > span {
+        min-width: 0;
+        width: 100%;
+        min-height: 4rem;
+        justify-content: center;
+        padding: 1rem 1.2rem;
+        overflow: hidden;
+      }
+
+      .slide-reserve .default-cta {
+        display: none;
+      }
+
+      .slide-reserve .slide-track {
+        display: block;
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+      }
+
+      .slide-reserve .slide-label,
+      .slide-reserve .slide-hint {
+        display: block;
+        position: relative;
+        z-index: 1;
+        pointer-events: none;
+        transition: opacity .2s ease;
+      }
+
+      .slide-reserve .slide-label {
+        font-weight: 600;
+        color: rgba(255,255,255,.96);
+      }
+
+      .slide-reserve .slide-hint {
+        position: absolute;
+        right: 1.2rem;
+        font-size: .68rem;
+        letter-spacing: .22em;
+        text-transform: uppercase;
+        color: rgba(182,255,0,.82);
+      }
+
+      .slide-reserve .slide-thumb {
+        display: inline-flex;
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 3.2rem;
+        height: 3.2rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        color: #0b0d09;
+        background: linear-gradient(180deg, #dfff97 0%, #b6ff00 100%);
+        box-shadow: 0 10px 26px rgba(182,255,0,.26), inset 0 1px 0 rgba(255,255,255,.5);
+        transform: translate3d(0, -50%, 0);
+        transition: transform .2s ease;
+        will-change: transform;
+        z-index: 2;
+      }
+
+      .slide-reserve.is-dragging .slide-thumb {
+        transition: none;
+      }
     }
   </style>
 </head>
@@ -303,17 +412,13 @@
 
   <header class="fixed top-0 left-0 right-0 z-50 nav-blur">
     <div class="max-w-7xl mx-auto px-6 md:px-8 py-4 flex items-center justify-between">
-      <a href="#top" class="flex items-center gap-4 magnetic" data-hover>
-        <div>
-          <div class="logo-wordmark text-3xl md:text-4xl leading-none">
-            FE<span class="accent">LI</span>TO
-          </div>
-          <div class="uppercase tracking-[0.45em] text-[10px] md:text-xs text-lime/80 ml-1">Barber Studio</div>
-        </div>
+      <a href="#top" class="flex items-center magnetic" data-hover>
+        <img src="img/logo.png" alt="Felito Barber Studio" style="height:52px;width:auto;" />
       </a>
 
       <nav class="hidden md:flex items-center gap-8 text-sm text-white/78">
         <a href="#servicios" class="hover:text-lime transition-colors" data-hover>Servicios</a>
+        <a href="#barberos" class="hover:text-lime transition-colors" data-hover>Barberos</a>
         <a href="#sedes" class="hover:text-lime transition-colors" data-hover>Sedes</a>
         <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors" data-hover>Reservas</a>
         <a href="#reviews" class="hover:text-lime transition-colors" data-hover>Reseñas</a>
@@ -329,9 +434,11 @@
   </header>
 
   <main class="relative z-10">
-    <section class="relative min-h-screen flex items-center overflow-hidden">
-      <div class="spotlight top-[8%] left-[-10%]"></div>
-      <div class="spotlight bottom-[-15%] right-[-10%]"></div>
+    <section class="relative min-h-screen flex items-center">
+      <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="spotlight top-[8%] left-[-10%]"></div>
+        <div class="spotlight bottom-[-15%] right-[-10%]"></div>
+      </div>
       <div class="hero-grid absolute inset-0 opacity-50"></div>
 
       <div class="max-w-7xl mx-auto px-6 md:px-8 pt-32 pb-20 w-full">
@@ -342,10 +449,11 @@
               Montevideo · Cordón & Punta Carretas
             </div>
 
-            <h1 class="section-reveal text-[clamp(3.6rem,9vw,8.6rem)] leading-[0.88] max-w-4xl font-display">
-              <span class="text-metal block">Precisión.</span>
-              <span class="text-acid block">Estilo.</span>
-              <span class="text-metal block">Identidad.</span>
+            <h1 class="section-reveal text-[clamp(2.8rem,7vw,7rem)] max-w-4xl font-display">
+              <span class="text-metal block">Tú barbería</span>
+              <span class="text-acid block">del barrio</span>
+              <span class="text-metal block">con un servicio</span>
+              <span class="text-acid block">de lujo.</span>
             </h1>
 
             <p class="section-reveal mt-8 max-w-2xl text-lg md:text-xl text-white/68 leading-relaxed">
@@ -353,10 +461,18 @@
             </p>
 
             <div class="section-reveal mt-10 flex flex-col sm:flex-row gap-4">
-              <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover>
+              <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic slide-reserve" data-hover data-slide-link>
                 <span>
-                  <i data-lucide="scissors-line-dashed" class="w-4 h-4"></i>
-                  Reservar ahora
+                  <span class="default-cta inline-flex items-center justify-center gap-[inherit]">
+                    <i data-lucide="scissors-line-dashed" class="w-4 h-4"></i>
+                    Reservar ahora
+                  </span>
+                  <span class="slide-track"></span>
+                  <span class="slide-thumb" aria-hidden="true">
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                  </span>
+                  <span class="slide-label">Reservar ahora</span>
+                  <span class="slide-hint">Deslizar</span>
                 </span>
               </a>
               <a href="#servicios" class="glass rounded-full px-6 py-4 inline-flex items-center justify-center gap-3 text-white/84 hover:text-white transition-all magnetic" data-hover>
@@ -384,7 +500,7 @@
           <div class="section-reveal">
             <div class="glass rounded-[2rem] p-3 md:p-4 shadow-metal metal-card">
               <div class="image-mask aspect-[4/5] bg-white/5 rounded-[1.6rem]">
-                <img src="https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=1200&q=80" alt="Barbería premium en blanco y negro" />
+                <img src="img/local-exterior.jpg" alt="Felito Barber Studio — local" style="object-position: left center;" />
               </div>
               <div class="grid grid-cols-2 gap-3 mt-3">
                 <div class="glass rounded-2xl p-4">
@@ -402,13 +518,13 @@
       </div>
     </section>
 
-    <section class="py-24 md:py-32 relative">
+    <section class="py-14 md:py-20 relative">
       <div class="max-w-7xl mx-auto px-6 md:px-8">
         <div class="divider mb-14"></div>
         <div class="grid lg:grid-cols-[.9fr_1.1fr] gap-10 items-start">
           <div class="section-reveal">
             <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Manifiesto</span>
-            <h2 class="mt-4 text-4xl md:text-6xl font-display leading-[0.95] max-w-xl">
+            <h2 class="mt-4 text-4xl md:text-6xl font-display max-w-xl">
               Más que una barbería, una experiencia de estilo.
             </h2>
           </div>
@@ -419,7 +535,7 @@
       </div>
     </section>
 
-    <section id="servicios" class="py-24 md:py-32 relative">
+    <section id="servicios" class="py-14 md:py-20 relative">
       <div class="max-w-7xl mx-auto px-6 md:px-8">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-14">
           <div class="section-reveal">
@@ -459,7 +575,57 @@
       </div>
     </section>
 
-    <section id="sedes" class="py-24 md:py-32 relative">
+    <!-- NUESTROS BARBEROS -->
+    <section id="barberos" class="py-14 md:py-20 relative">
+      <div class="max-w-7xl mx-auto px-6 md:px-8">
+
+        <!-- título -->
+        <div class="text-center mb-14 section-reveal">
+          <div class="inline-flex items-center gap-3 glass rounded-full px-4 py-2 text-xs uppercase tracking-[0.25em] text-white/70 mb-6">
+            <span class="w-2 h-2 rounded-full bg-lime shadow-[0_0_20px_rgba(182,255,0,.8)]"></span>
+            El equipo
+          </div>
+          <h2 class="font-display text-[clamp(2.4rem,6vw,5rem)] text-metal">Nuestros barberos</h2>
+        </div>
+
+        <!-- grilla de cards -->
+        <div class="grid md:grid-cols-3 gap-6 section-reveal">
+
+          <!-- Felito -->
+          <div class="glass rounded-[2rem] p-4 metal-card">
+            <div class="image-mask aspect-[3/4] bg-white/5 rounded-[1.4rem]">
+              <img src="img/felito.png" alt="Felito" style="object-position: center top; transform: scale(1.25);" />
+            </div>
+            <div class="mt-5 pb-2 text-center">
+              <div class="font-display text-2xl text-metal">Felito</div>
+            </div>
+          </div>
+
+          <!-- Stephi -->
+          <div class="glass rounded-[2rem] p-4 metal-card">
+            <div class="image-mask aspect-[3/4] bg-white/5 rounded-[1.4rem]">
+              <img src="img/stephi.jpg" alt="Stephi" style="object-position: center top; transform: scale(1.35);" />
+            </div>
+            <div class="mt-5 pb-2 text-center">
+              <div class="font-display text-2xl text-metal">Stephi</div>
+            </div>
+          </div>
+
+          <!-- Kike -->
+          <div class="glass rounded-[2rem] p-4 metal-card">
+            <div class="image-mask aspect-[3/4] bg-white/5 rounded-[1.4rem]">
+              <img src="img/kike.png" alt="Kike" style="object-position: center top; transform: scale(1.3);" />
+            </div>
+            <div class="mt-5 pb-2 text-center">
+              <div class="font-display text-2xl text-metal">Kike</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section id="sedes" class="py-14 md:py-20 relative">
       <div class="max-w-7xl mx-auto px-6 md:px-8">
         <div class="section-reveal mb-14">
           <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Sedes</span>
@@ -480,8 +646,8 @@
             <p class="text-white/60 leading-relaxed">Una ubicación estratégica para quienes buscan una experiencia premium en el corazón de la ciudad, con reservas ágiles y atención consistente.</p>
             <div class="mt-8 flex flex-wrap gap-4">
               <a href="https://book.weibook.co/branch/felito-barber-studio-sede-1" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover><span>Reservar en Cordón</span></a>
-              <a href="https://maps.google.com/?q=José+Enrique+Rodó+1969,+Montevideo" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-5 py-4 inline-flex items-center gap-3 magnetic" data-hover>
-                <i data-lucide="map-pinned" class="w-4 h-4"></i> Ver mapa
+              <a href="https://maps.app.goo.gl/GP3hRJw9NedJgwLM9" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-5 py-4 inline-flex items-center gap-3 magnetic" data-hover>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Ver mapa
               </a>
             </div>
           </article>
@@ -499,8 +665,8 @@
             <p class="text-white/60 leading-relaxed">Pensada para un público que valora el diseño, la prolijidad y un servicio de grooming alineado con una estética urbana sofisticada.</p>
             <div class="mt-8 flex flex-wrap gap-4">
               <a href="https://book.weibook.co/branch/felito-barber-studio-punta-carretas" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover><span>Reservar en Punta Carretas</span></a>
-              <a href="https://maps.google.com/?q=Luis+Franzini+938,+Montevideo" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-5 py-4 inline-flex items-center gap-3 magnetic" data-hover>
-                <i data-lucide="map-pinned" class="w-4 h-4"></i> Ver mapa
+              <a href="https://maps.app.goo.gl/7zQtRn3iibWjNiWW7" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-5 py-4 inline-flex items-center gap-3 magnetic" data-hover>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Ver mapa
               </a>
             </div>
           </article>
@@ -508,10 +674,10 @@
       </div>
     </section>
 
-    <section id="reserva" class="py-24 md:py-32 relative">
+    <section id="reserva" class="py-14 md:py-20 relative">
       <div class="max-w-7xl mx-auto px-6 md:px-8">
         <div class="grid lg:grid-cols-[1fr_.9fr] gap-8 items-stretch">
-          <div class="section-reveal glass rounded-[2rem] p-8 md:p-12 relative overflow-hidden">
+          <div class="section-reveal glass rounded-[2rem] p-8 md:p-12 relative">
             <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(182,255,0,.12),transparent_34%)]"></div>
             <div class="relative z-10">
               <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Reservas</span>
@@ -543,7 +709,7 @@
                   </span>
                 </a>
                 <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-6 py-4 inline-flex items-center justify-center gap-3 magnetic" data-hover>
-                  <i data-lucide="instagram" class="w-4 h-4"></i>
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
                   Ver Instagram
                 </a>
               </div>
@@ -552,41 +718,72 @@
 
           <div class="section-reveal glass rounded-[2rem] p-4 md:p-5 shadow-metal">
             <div class="image-mask rounded-[1.5rem] aspect-[4/5]">
-              <img src="https://images.unsplash.com/photo-1585747860715-ebba7e41a0d0?auto=format&fit=crop&w=1200&q=80" alt="Detalle de barbería premium" />
+              <img src="img/screen-reservas.png" alt="Sistema de reservas Felito" />
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="reviews" class="py-24 md:py-32 relative">
+    <section id="reviews" class="py-14 md:py-20 relative">
       <div class="max-w-7xl mx-auto px-6 md:px-8">
         <div class="section-reveal mb-14 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
             <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Prueba social</span>
             <h2 class="mt-4 text-4xl md:text-6xl font-display">Confianza visible.</h2>
           </div>
-          <div class="glass rounded-full px-5 py-3 text-sm shimmer-line">Calificación destacada: 5.0 estrellas</div>
+          <a href="https://share.google/AbWukLTyyscNxJhGN" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-5 py-3 text-sm shimmer-line inline-flex items-center gap-3 hover:border-lime/30 transition-colors" data-hover>
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M21.805 10.023H12v4.05h5.618c-.242 1.24-.977 2.292-2.08 2.998v2.49h3.367c1.97-1.814 3.1-4.487 3.1-7.538 0-.73-.065-1.433-.2-2z" fill="#4285F4"/><path d="M12 22c2.7 0 4.963-.896 6.617-2.43l-3.367-2.49c-.896.6-2.043.955-3.25.955-2.5 0-4.617-1.688-5.373-3.957H3.15v2.568A9.997 9.997 0 0 0 12 22z" fill="#34A853"/><path d="M6.627 14.078A5.98 5.98 0 0 1 6.315 12c0-.72.124-1.42.312-2.078V7.354H3.15A9.997 9.997 0 0 0 2 12c0 1.614.387 3.14 1.15 4.646l3.477-2.568z" fill="#FBBC05"/><path d="M12 6.045c1.407 0 2.668.484 3.66 1.432l2.745-2.745C16.96 3.19 14.698 2 12 2A9.997 9.997 0 0 0 3.15 7.354l3.477 2.568C7.383 7.733 9.5 6.045 12 6.045z" fill="#EA4335"/></svg>
+            5.0 ★★★★★ · Ver en Google
+          </a>
         </div>
 
-        <div class="grid lg:grid-cols-3 gap-5">
-          <article class="section-reveal glass metal-card rounded-[2rem] p-7">
-            <div class="flex items-center gap-1 text-lime mb-5">★★★★★</div>
-            <p class="text-white/72 leading-relaxed">“Se nota el criterio, la técnica y la prolijidad. No es solo un corte: es una experiencia completa.”</p>
-            <div class="mt-6 text-sm uppercase tracking-[0.25em] text-white/40">Cliente frecuente</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
+          <article class="section-reveal glass review-card rounded-[2rem] p-7 h-full">
+            <div class="flex items-start justify-between gap-4 mb-6">
+              <div class="text-lime text-[1.1rem] tracking-[0.2em] leading-none">★★★★★</div>
+              <a href="https://share.google/kFuadEHchpw5wHXIu" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-3 py-1.5 text-xs text-white/50 hover:text-white/80 inline-flex items-center gap-1.5 transition-colors shrink-0" data-hover>
+                <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M21.805 10.023H12v4.05h5.618c-.242 1.24-.977 2.292-2.08 2.998v2.49h3.367c1.97-1.814 3.1-4.487 3.1-7.538 0-.73-.065-1.433-.2-2z" fill="#4285F4"/><path d="M12 22c2.7 0 4.963-.896 6.617-2.43l-3.367-2.49c-.896.6-2.043.955-3.25.955-2.5 0-4.617-1.688-5.373-3.957H3.15v2.568A9.997 9.997 0 0 0 12 22z" fill="#34A853"/><path d="M6.627 14.078A5.98 5.98 0 0 1 6.315 12c0-.72.124-1.42.312-2.078V7.354H3.15A9.997 9.997 0 0 0 2 12c0 1.614.387 3.14 1.15 4.646l3.477-2.568z" fill="#FBBC05"/><path d="M12 6.045c1.407 0 2.668.484 3.66 1.432l2.745-2.745C16.96 3.19 14.698 2 12 2A9.997 9.997 0 0 0 3.15 7.354l3.477 2.568C7.383 7.733 9.5 6.045 12 6.045z" fill="#EA4335"/></svg>
+                Google
+              </a>
+            </div>
+            <p class="review-body text-white/75 leading-relaxed text-[0.95rem]">"Muy recomendable! Llevé a mi hijo a cortarse el pelo... el peluquero que lo atendió un genio, muy buena onda y atento! Le dije cómo quería el corte y lo hizo tal cual!"</p>
+            <div class="mt-6 pt-5 border-t border-white/8">
+              <div class="font-display text-base text-white/70">Ana</div>
+              <div class="text-xs uppercase tracking-[0.2em] text-white/35 mt-0.5">Cliente verificada</div>
+            </div>
           </article>
 
-          <article class="section-reveal glass metal-card rounded-[2rem] p-7">
-            <div class="flex items-center gap-1 text-lime mb-5">★★★★★</div>
-            <p class="text-white/72 leading-relaxed">“Reservar fue rápido, el ambiente impecable y el resultado final superó expectativas.”</p>
-            <div class="mt-6 text-sm uppercase tracking-[0.25em] text-white/40">Reseña verificada</div>
+          <article class="section-reveal glass review-card rounded-[2rem] p-7 h-full">
+            <div class="flex items-start justify-between gap-4 mb-6">
+              <div class="text-lime text-[1.1rem] tracking-[0.2em] leading-none">★★★★★</div>
+              <a href="https://share.google/JrvrUtNDAAzrBbtI2" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-3 py-1.5 text-xs text-white/50 hover:text-white/80 inline-flex items-center gap-1.5 transition-colors shrink-0" data-hover>
+                <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M21.805 10.023H12v4.05h5.618c-.242 1.24-.977 2.292-2.08 2.998v2.49h3.367c1.97-1.814 3.1-4.487 3.1-7.538 0-.73-.065-1.433-.2-2z" fill="#4285F4"/><path d="M12 22c2.7 0 4.963-.896 6.617-2.43l-3.367-2.49c-.896.6-2.043.955-3.25.955-2.5 0-4.617-1.688-5.373-3.957H3.15v2.568A9.997 9.997 0 0 0 12 22z" fill="#34A853"/><path d="M6.627 14.078A5.98 5.98 0 0 1 6.315 12c0-.72.124-1.42.312-2.078V7.354H3.15A9.997 9.997 0 0 0 2 12c0 1.614.387 3.14 1.15 4.646l3.477-2.568z" fill="#FBBC05"/><path d="M12 6.045c1.407 0 2.668.484 3.66 1.432l2.745-2.745C16.96 3.19 14.698 2 12 2A9.997 9.997 0 0 0 3.15 7.354l3.477 2.568C7.383 7.733 9.5 6.045 12 6.045z" fill="#EA4335"/></svg>
+                Google
+              </a>
+            </div>
+            <p class="review-body text-white/75 leading-relaxed text-[0.95rem]">"Equipo súper profesional, la atención al detalle y la dedicación es admirable. La verdad que trabajan impecable 😌"</p>
+            <div class="mt-6 pt-5 border-t border-white/8">
+              <div class="font-display text-base text-white/70">Mauro</div>
+              <div class="text-xs uppercase tracking-[0.2em] text-white/35 mt-0.5">Cliente verificado</div>
+            </div>
           </article>
 
-          <article class="section-reveal glass metal-card rounded-[2rem] p-7">
-            <div class="flex items-center gap-1 text-lime mb-5">★★★★★</div>
-            <p class="text-white/72 leading-relaxed">“Una barbería con identidad. Todo se siente cuidado: desde la atención hasta el último detalle visual.”</p>
-            <div class="mt-6 text-sm uppercase tracking-[0.25em] text-white/40">Cliente nuevo</div>
+          <article class="section-reveal glass review-card rounded-[2rem] p-7 h-full md:col-span-2 xl:col-span-1">
+            <div class="flex items-start justify-between gap-4 mb-6">
+              <div class="text-lime text-[1.1rem] tracking-[0.2em] leading-none">★★★★★</div>
+              <a href="https://share.google/C7ddmFEjL3HpGCnGR" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-3 py-1.5 text-xs text-white/50 hover:text-white/80 inline-flex items-center gap-1.5 transition-colors shrink-0" data-hover>
+                <svg class="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M21.805 10.023H12v4.05h5.618c-.242 1.24-.977 2.292-2.08 2.998v2.49h3.367c1.97-1.814 3.1-4.487 3.1-7.538 0-.73-.065-1.433-.2-2z" fill="#4285F4"/><path d="M12 22c2.7 0 4.963-.896 6.617-2.43l-3.367-2.49c-.896.6-2.043.955-3.25.955-2.5 0-4.617-1.688-5.373-3.957H3.15v2.568A9.997 9.997 0 0 0 12 22z" fill="#34A853"/><path d="M6.627 14.078A5.98 5.98 0 0 1 6.315 12c0-.72.124-1.42.312-2.078V7.354H3.15A9.997 9.997 0 0 0 2 12c0 1.614.387 3.14 1.15 4.646l3.477-2.568z" fill="#FBBC05"/><path d="M12 6.045c1.407 0 2.668.484 3.66 1.432l2.745-2.745C16.96 3.19 14.698 2 12 2A9.997 9.997 0 0 0 3.15 7.354l3.477 2.568C7.383 7.733 9.5 6.045 12 6.045z" fill="#EA4335"/></svg>
+                Google
+              </a>
+            </div>
+            <p class="review-body text-white/75 leading-relaxed text-[0.95rem]">"Soy de la zona y puedo garantizar que es la mejor barbería del cordón. Excelente dedicación en cada corte, muy atentos a los detalles. Si buscas cambiar de barbero, te súper recomiendo a Felito, no cambias más!"</p>
+            <div class="mt-6 pt-5 border-t border-white/8">
+              <div class="font-display text-base text-white/70">Gustavo</div>
+              <div class="text-xs uppercase tracking-[0.2em] text-white/35 mt-0.5">Cliente verificado</div>
+            </div>
           </article>
+
         </div>
       </div>
     </section>
@@ -607,7 +804,7 @@
   <footer class="relative z-10 border-t border-white/6">
     <div class="max-w-7xl mx-auto px-6 md:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
       <div>
-        <div class="logo-wordmark text-3xl leading-none">FE<span class="accent">LI</span>TO</div>
+        <div class="logo-wordmark text-3xl">FE<span class="accent">LI</span>TO</div>
         <div class="uppercase tracking-[0.42em] text-[10px] text-lime/80 ml-1 mt-1">Barber Studio</div>
       </div>
 
@@ -716,6 +913,93 @@
       });
       card.addEventListener('mouseleave', () => {
         gsap.to(card, { rotateX: 0, rotateY: 0, duration: 0.45, ease: 'power3.out' });
+      });
+    });
+
+    const slideButtons = document.querySelectorAll('[data-slide-link]');
+    const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+
+    slideButtons.forEach((button) => {
+      const thumb = button.querySelector('.slide-thumb');
+      const track = button.querySelector('.slide-track');
+      if (!thumb || !track) return;
+
+      let dragging = false;
+      let startX = 0;
+      let currentX = 0;
+      let maxX = 0;
+      let opened = false;
+
+      const resetThumb = (animated = true) => {
+        button.classList.remove('is-dragging');
+        if (animated) thumb.style.transition = '';
+        thumb.style.transform = 'translate3d(0, -50%, 0)';
+      };
+
+      const completeSlide = () => {
+        if (opened) return;
+        opened = true;
+        button.classList.add('is-complete');
+        thumb.style.transition = '';
+        thumb.style.transform = `translate3d(${maxX}px, -50%, 0)`;
+        setTimeout(() => {
+          if (button.target === '_blank') {
+            window.open(button.href, '_blank', 'noopener');
+          } else {
+            window.location.href = button.href;
+          }
+        }, 140);
+      };
+
+      const updatePosition = (clientX) => {
+        const delta = clientX - startX;
+        currentX = Math.min(Math.max(0, delta), maxX);
+        thumb.style.transform = `translate3d(${currentX}px, -50%, 0)`;
+      };
+
+      const startDrag = (clientX) => {
+        if (!isCoarsePointer || opened) return;
+        const bounds = track.getBoundingClientRect();
+        maxX = Math.max(0, bounds.width - thumb.offsetWidth);
+        dragging = true;
+        startX = clientX - currentX;
+        button.classList.add('is-dragging');
+        thumb.style.transition = 'none';
+      };
+
+      const endDrag = () => {
+        if (!dragging) return;
+        dragging = false;
+        const threshold = maxX * 0.82;
+        if (currentX >= threshold) {
+          completeSlide();
+        } else {
+          currentX = 0;
+          resetThumb();
+        }
+      };
+
+      button.addEventListener('click', (event) => {
+        if (isCoarsePointer && !opened) {
+          event.preventDefault();
+        }
+      });
+
+      button.addEventListener('pointerdown', (event) => {
+        if (!isCoarsePointer) return;
+        startDrag(event.clientX);
+        button.setPointerCapture?.(event.pointerId);
+      });
+
+      button.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        updatePosition(event.clientX);
+      });
+
+      button.addEventListener('pointerup', endDrag);
+      button.addEventListener('pointercancel', endDrag);
+      button.addEventListener('pointerleave', () => {
+        if (dragging) endDrag();
       });
     });
 
