@@ -345,7 +345,6 @@
         -webkit-user-select: none;
       }
 
-      /* wrapper span becomes the pill track */
       .slide-reserve > span {
         position: relative;
         min-width: 0;
@@ -357,7 +356,7 @@
         padding: 0;
       }
 
-      /* text label centered, above fill */
+      /* label sits above fill */
       .slide-reserve .default-cta {
         position: relative;
         z-index: 3;
@@ -369,27 +368,29 @@
         gap: .5rem;
         padding: 0 1.2rem 0 3.4rem;
         pointer-events: none;
+        will-change: opacity;
       }
 
-      /* green fill — width driven by JS */
+      /* fill — scaleX driven by JS, GPU composited */
       .slide-reserve .slide-track {
         display: block;
         position: absolute;
         inset: 0;
-        width: 0;
         border-radius: 999px;
-        background: linear-gradient(90deg, rgba(182,255,0,.55) 0%, rgba(182,255,0,.22) 100%);
-        transform-origin: left;
+        background: linear-gradient(90deg, rgba(182,255,0,.62) 0%, rgba(182,255,0,.2) 100%);
+        transform: scaleX(0);
+        transform-origin: left center;
+        will-change: transform;
         pointer-events: none;
         z-index: 1;
       }
 
-      /* smooth snap-back only; during drag transition is none */
-      .slide-reserve:not(.is-dragging) .slide-track {
-        transition: width .35s cubic-bezier(.22,1,.36,1);
+      .slide-reserve.is-complete .slide-track {
+        background: linear-gradient(90deg, rgba(182,255,0,.9) 0%, rgba(182,255,0,.55) 100%);
+        box-shadow: 0 0 32px rgba(182,255,0,.28);
       }
 
-      /* thumb circle */
+      /* thumb — transform fully driven by JS */
       .slide-reserve .slide-thumb {
         display: inline-flex;
         position: absolute;
@@ -402,29 +403,18 @@
         border-radius: 50%;
         color: #0b0d09;
         background: linear-gradient(160deg, #dfff97 0%, #b6ff00 100%);
-        box-shadow: 0 6px 20px rgba(182,255,0,.35), inset 0 1px 0 rgba(255,255,255,.5);
+        box-shadow: 0 6px 20px rgba(182,255,0,.32), inset 0 1px 0 rgba(255,255,255,.5);
         transform: translate3d(0, -50%, 0);
         will-change: transform;
         z-index: 4;
-        /* smooth return only */
-        transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .2s ease;
       }
 
-      .slide-reserve.is-dragging .slide-thumb {
-        transition: none;
-        box-shadow: 0 8px 28px rgba(182,255,0,.5), inset 0 1px 0 rgba(255,255,255,.5);
-      }
-
-      /* success flash */
-      .slide-reserve.is-complete .slide-track {
-        transition: width .2s ease !important;
-        background: linear-gradient(90deg, rgba(182,255,0,.85), rgba(182,255,0,.55));
+      .slide-reserve.is-complete .slide-thumb {
+        box-shadow: 0 8px 32px rgba(182,255,0,.55), inset 0 1px 0 rgba(255,255,255,.6);
       }
 
       .slide-reserve .slide-label,
-      .slide-reserve .slide-hint {
-        display: none;
-      }
+      .slide-reserve .slide-hint { display: none; }
     }
   </style>
 </head>
@@ -1010,68 +1000,113 @@
 
     if (window.matchMedia('(pointer: coarse)').matches) {
       document.querySelectorAll('[data-slide-link]').forEach((button) => {
-        const thumb = button.querySelector('.slide-thumb');
-        const track = button.querySelector('.slide-track');
+        const thumb  = button.querySelector('.slide-thumb');
+        const track  = button.querySelector('.slide-track');
+        const label  = button.querySelector('.default-cta');
         if (!thumb || !track) return;
 
-        const PAD = 5; // px gap from right edge
+        const PAD = 6;
+        const SPRING_K  = 0.19;   // stiffness
+        const SPRING_D  = 0.72;   // damping
+        const RUBBER    = 0.28;   // resistance past maxX
+
+        let posX     = 0;    // rendered position
+        let velX     = 0;    // spring velocity
+        let targetX  = 0;    // where pointer wants us
         let dragging = false;
-        let startX = 0;
-        let currentX = 0;
-        let maxX = 0;
-        let done = false;
+        let snapping = false;
+        let done     = false;
+        let startX   = 0;
+        let maxX     = 0;
+        let thumbW   = 0;
+        let btnW     = 0;
+        let rafId    = null;
 
-        const setPos = (x) => {
-          thumb.style.transform = `translate3d(${x}px, -50%, 0)`;
-          track.style.width = `${x + thumb.offsetWidth + PAD}px`;
+        /* ── render: ONE place that writes to DOM ── */
+        const render = () => {
+          rafId = null;
+
+          if (dragging) {
+            posX = targetX;
+          } else if (snapping) {
+            velX += (0 - posX) * SPRING_K;
+            velX *= SPRING_D;
+            posX += velX;
+            if (Math.abs(posX) < 0.4 && Math.abs(velX) < 0.4) {
+              posX = 0; velX = 0; snapping = false;
+              button.classList.remove('is-dragging');
+              if (label) label.style.opacity = '';
+              track.style.transform = 'scaleX(0)';
+              thumb.style.transform = 'translate3d(0,-50%,0)';
+              return;
+            }
+          }
+
+          const progress = btnW > 0 ? Math.min(1, (posX + thumbW + PAD) / btnW) : 0;
+          thumb.style.transform = `translate3d(${posX}px,-50%,0)${dragging ? ' scale(1.07)' : ''}`;
+          track.style.transform = `scaleX(${progress})`;
+          if (label) label.style.opacity = Math.max(0.12, 1 - (posX / (maxX || 1)) * 0.88);
+
+          if (snapping) rafId = requestAnimationFrame(render);
         };
 
-        const reset = () => {
-          button.classList.remove('is-dragging');
-          currentX = 0;
-          setPos(0);
-        };
+        const schedule = () => { if (!rafId) rafId = requestAnimationFrame(render); };
 
+        /* ── complete ── */
         const complete = () => {
           if (done) return;
           done = true;
+          snapping = false;
+          dragging = false;
           button.classList.remove('is-dragging');
           button.classList.add('is-complete');
-          setPos(maxX);
-          setTimeout(() => {
-            window.location.href = button.getAttribute('href');
-          }, 260);
+          posX = maxX;
+          render();
+          if (navigator.vibrate) navigator.vibrate([8, 40, 14]);
+          setTimeout(() => { window.location.href = button.getAttribute('href'); }, 300);
         };
 
-        button.addEventListener('click', (e) => {
-          if (!done) e.preventDefault();
-        });
+        /* ── events ── */
+        button.addEventListener('click', (e) => { if (!done) e.preventDefault(); });
 
         button.addEventListener('pointerdown', (e) => {
           if (done) return;
           e.preventDefault();
+          if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+          snapping = false;
           const rect = button.getBoundingClientRect();
-          maxX = rect.width - thumb.offsetWidth - PAD * 2;
-          startX = e.clientX - currentX;
+          btnW   = rect.width;
+          thumbW = thumb.offsetWidth;
+          maxX   = btnW - thumbW - PAD * 2;
+          startX = e.clientX - posX;
           dragging = true;
+          velX = 0;
           button.classList.add('is-dragging');
           button.setPointerCapture(e.pointerId);
+          if (navigator.vibrate) navigator.vibrate(6);
         });
 
         button.addEventListener('pointermove', (e) => {
           if (!dragging) return;
           const raw = e.clientX - startX;
-          currentX = Math.min(Math.max(0, raw), maxX);
-          setPos(currentX);
+          if (raw > maxX) {
+            // rubber band resistance past end
+            targetX = maxX + (raw - maxX) * RUBBER;
+          } else {
+            targetX = Math.max(0, raw);
+          }
+          schedule();
         });
 
         const end = () => {
           if (!dragging) return;
           dragging = false;
-          if (currentX >= maxX * 0.78) {
+          if (posX >= maxX * 0.76) {
             complete();
           } else {
-            reset();
+            snapping = true;
+            velX = 0;
+            schedule();
           }
         };
 
