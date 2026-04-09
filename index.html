@@ -1036,10 +1036,12 @@
 
         const snapBack = () => {
           posX = 0;
-          button.classList.remove('is-dragging');
-          thumb.style.transform = 'translate3d(0,-50%,0)';
-          track.style.transform = 'scaleX(0)';
-          if (label) label.style.opacity = '';
+          button.classList.remove('is-dragging'); // re-habilita transition
+          requestAnimationFrame(() => {           // siguiente frame: transition ya activa
+            thumb.style.transform = 'translate3d(0,-50%,0)';
+            track.style.transform = 'scaleX(0)';
+            if (label) label.style.opacity = '';
+          });
         };
 
         const complete = () => {
