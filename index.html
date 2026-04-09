@@ -236,20 +236,11 @@
       background: linear-gradient(180deg, rgba(19,19,19,.93), rgba(8,8,8,.93));
     }
 
-    .slide-reserve {
-      touch-action: pan-y;
-      --slide-progress: 3.2rem;
-    }
     .slide-reserve .slide-track,
     .slide-reserve .slide-thumb,
     .slide-reserve .slide-label,
     .slide-reserve .slide-hint {
       display: none;
-    }
-
-    .slide-reserve.is-complete .slide-label,
-    .slide-reserve.is-complete .slide-hint {
-      opacity: 0;
     }
 
     .shimmer-line { position: relative; overflow: hidden; }
@@ -339,66 +330,93 @@
       body { cursor: auto; }
       .cursor, .cursor-dot { display: none; }
 
+      /* ── Slide-to-reserve (touch only) ── */
       .slide-reserve {
         width: min(100%, 22rem);
+        touch-action: pan-y;
+        user-select: none;
+        -webkit-user-select: none;
       }
 
+      /* wrapper span becomes the pill track */
       .slide-reserve > span {
+        position: relative;
         min-width: 0;
         width: 100%;
-        min-height: 4rem;
-        justify-content: center;
-        padding: 1rem 1.2rem;
+        min-height: 3.8rem;
         overflow: hidden;
+        border-radius: 999px;
+        justify-content: center;
+        padding: 0;
       }
 
+      /* text label centered, above fill */
       .slide-reserve .default-cta {
         position: relative;
-        z-index: 2;
+        z-index: 3;
         width: 100%;
+        height: 3.8rem;
+        display: flex;
+        align-items: center;
         justify-content: center;
-        padding-left: 3rem;
+        gap: .5rem;
+        padding: 0 1.2rem 0 3.4rem;
+        pointer-events: none;
       }
 
+      /* green fill — width driven by JS */
       .slide-reserve .slide-track {
         display: block;
         position: absolute;
-        left: .22rem;
-        top: .22rem;
-        bottom: .22rem;
-        width: min(calc(100% - .44rem), var(--slide-progress));
-        border-radius: inherit;
-        background: linear-gradient(180deg, rgba(223,255,151,.96) 0%, rgba(182,255,0,.92) 100%);
-        box-shadow: 0 0 26px rgba(182,255,0,.18), inset 0 1px 0 rgba(255,255,255,.35);
-        transition: width .18s ease;
+        inset: 0;
+        width: 0;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(182,255,0,.55) 0%, rgba(182,255,0,.22) 100%);
+        transform-origin: left;
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      /* smooth snap-back only; during drag transition is none */
+      .slide-reserve:not(.is-dragging) .slide-track {
+        transition: width .35s cubic-bezier(.22,1,.36,1);
+      }
+
+      /* thumb circle */
+      .slide-reserve .slide-thumb {
+        display: inline-flex;
+        position: absolute;
+        left: .3rem;
+        top: 50%;
+        width: 3rem;
+        height: 3rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: #0b0d09;
+        background: linear-gradient(160deg, #dfff97 0%, #b6ff00 100%);
+        box-shadow: 0 6px 20px rgba(182,255,0,.35), inset 0 1px 0 rgba(255,255,255,.5);
+        transform: translate3d(0, -50%, 0);
+        will-change: transform;
+        z-index: 4;
+        /* smooth return only */
+        transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .2s ease;
+      }
+
+      .slide-reserve.is-dragging .slide-thumb {
+        transition: none;
+        box-shadow: 0 8px 28px rgba(182,255,0,.5), inset 0 1px 0 rgba(255,255,255,.5);
+      }
+
+      /* success flash */
+      .slide-reserve.is-complete .slide-track {
+        transition: width .2s ease !important;
+        background: linear-gradient(90deg, rgba(182,255,0,.85), rgba(182,255,0,.55));
       }
 
       .slide-reserve .slide-label,
       .slide-reserve .slide-hint {
         display: none;
-      }
-
-      .slide-reserve .slide-thumb {
-        display: inline-flex;
-        position: absolute;
-        left: .22rem;
-        top: 50%;
-        width: 2.85rem;
-        height: 2.85rem;
-        align-items: center;
-        justify-content: center;
-        border-radius: 999px;
-        color: #0b0d09;
-        background: linear-gradient(180deg, #dfff97 0%, #b6ff00 100%);
-        box-shadow: 0 10px 26px rgba(182,255,0,.26), inset 0 1px 0 rgba(255,255,255,.5);
-        transform: translate3d(0, -50%, 0);
-        transition: transform .2s ease;
-        will-change: transform;
-        z-index: 2;
-      }
-
-      .slide-reserve.is-dragging .slide-thumb {
-        transition: none;
       }
     }
   </style>
@@ -996,96 +1014,83 @@
       });
     });
 
-    const slideButtons = document.querySelectorAll('[data-slide-link]');
-    const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    if (window.matchMedia('(pointer: coarse)').matches) {
+      document.querySelectorAll('[data-slide-link]').forEach((button) => {
+        const thumb = button.querySelector('.slide-thumb');
+        const track = button.querySelector('.slide-track');
+        if (!thumb || !track) return;
 
-    slideButtons.forEach((button) => {
-      const thumb = button.querySelector('.slide-thumb');
-      const track = button.querySelector('.slide-track');
-      if (!thumb || !track) return;
+        const PAD = 5; // px gap from right edge
+        let dragging = false;
+        let startX = 0;
+        let currentX = 0;
+        let maxX = 0;
+        let done = false;
 
-      let dragging = false;
-      let startX = 0;
-      let currentX = 0;
-      let maxX = 0;
-      let opened = false;
+        const setPos = (x) => {
+          thumb.style.transform = `translate3d(${x}px, -50%, 0)`;
+          track.style.width = `${x + thumb.offsetWidth + PAD}px`;
+        };
 
-      const resetThumb = (animated = true) => {
-        button.classList.remove('is-dragging');
-        if (animated) thumb.style.transition = '';
-        button.style.setProperty('--slide-progress', `${thumb.offsetWidth}px`);
-        thumb.style.transform = 'translate3d(0, -50%, 0)';
-      };
-
-      const completeSlide = () => {
-        if (opened) return;
-        opened = true;
-        button.classList.add('is-complete');
-        thumb.style.transition = '';
-        button.style.setProperty('--slide-progress', `${maxX + thumb.offsetWidth}px`);
-        thumb.style.transform = `translate3d(${maxX}px, -50%, 0)`;
-        if (button.target === '_blank') {
-          window.open(button.href, '_blank', 'noopener');
-        } else {
-          window.location.href = button.href;
-        }
-      };
-
-      const updatePosition = (clientX) => {
-        const delta = clientX - startX;
-        currentX = Math.min(Math.max(0, delta), maxX);
-        button.style.setProperty('--slide-progress', `${currentX + thumb.offsetWidth}px`);
-        thumb.style.transform = `translate3d(${currentX}px, -50%, 0)`;
-      };
-
-      const startDrag = (clientX) => {
-        if (!isCoarsePointer || opened) return;
-        const bounds = button.getBoundingClientRect();
-        maxX = Math.max(0, bounds.width - thumb.offsetWidth - 7);
-        dragging = true;
-        startX = clientX - currentX;
-        button.classList.add('is-dragging');
-        thumb.style.transition = 'none';
-        button.style.setProperty('--slide-progress', `${currentX + thumb.offsetWidth}px`);
-      };
-
-      const endDrag = () => {
-        if (!dragging) return;
-        dragging = false;
-        const threshold = maxX * 0.82;
-        if (currentX >= threshold) {
-          completeSlide();
-        } else {
+        const reset = () => {
+          button.classList.remove('is-dragging');
           currentX = 0;
-          resetThumb();
-        }
-      };
+          setPos(0);
+        };
 
-      button.addEventListener('click', (event) => {
-        if (isCoarsePointer && !opened) {
-          event.preventDefault();
-        }
+        const complete = () => {
+          if (done) return;
+          done = true;
+          button.classList.remove('is-dragging');
+          button.classList.add('is-complete');
+          setPos(maxX);
+          setTimeout(() => {
+            const href = button.getAttribute('href');
+            const target = button.getAttribute('target');
+            if (target === '_blank') {
+              window.open(href, '_blank', 'noopener');
+            } else {
+              window.location.href = href;
+            }
+          }, 280);
+        };
+
+        button.addEventListener('click', (e) => {
+          if (!done) e.preventDefault();
+        });
+
+        button.addEventListener('pointerdown', (e) => {
+          if (done) return;
+          e.preventDefault();
+          const rect = button.getBoundingClientRect();
+          maxX = rect.width - thumb.offsetWidth - PAD * 2;
+          startX = e.clientX - currentX;
+          dragging = true;
+          button.classList.add('is-dragging');
+          button.setPointerCapture(e.pointerId);
+        });
+
+        button.addEventListener('pointermove', (e) => {
+          if (!dragging) return;
+          const raw = e.clientX - startX;
+          currentX = Math.min(Math.max(0, raw), maxX);
+          setPos(currentX);
+        });
+
+        const end = () => {
+          if (!dragging) return;
+          dragging = false;
+          if (currentX >= maxX * 0.78) {
+            complete();
+          } else {
+            reset();
+          }
+        };
+
+        button.addEventListener('pointerup', end);
+        button.addEventListener('pointercancel', end);
       });
-
-      button.addEventListener('pointerdown', (event) => {
-        if (!isCoarsePointer) return;
-        startDrag(event.clientX);
-        button.setPointerCapture?.(event.pointerId);
-      });
-
-      button.addEventListener('pointermove', (event) => {
-        if (!dragging) return;
-        updatePosition(event.clientX);
-      });
-
-      button.addEventListener('pointerup', endDrag);
-      button.addEventListener('pointercancel', endDrag);
-      button.addEventListener('pointerleave', () => {
-        if (dragging) endDrag();
-      });
-
-      resetThumb(false);
-    });
+    }
 
     if (window.paper) {
       paper.setup(document.getElementById('liquid-bg'));
