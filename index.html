@@ -1045,14 +1045,8 @@
           button.classList.add('is-complete');
           setPos(maxX);
           setTimeout(() => {
-            const href = button.getAttribute('href');
-            const target = button.getAttribute('target');
-            if (target === '_blank') {
-              window.open(href, '_blank', 'noopener');
-            } else {
-              window.location.href = href;
-            }
-          }, 280);
+            window.location.href = button.getAttribute('href');
+          }, 260);
         };
 
         button.addEventListener('click', (e) => {
