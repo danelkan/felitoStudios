@@ -390,7 +390,7 @@
         box-shadow: 0 0 32px rgba(182,255,0,.28);
       }
 
-      /* thumb — transform fully driven by JS */
+      /* thumb — JS drives transform during drag, CSS spring on release */
       .slide-reserve .slide-thumb {
         display: inline-flex;
         position: absolute;
@@ -407,10 +407,21 @@
         transform: translate3d(0, -50%, 0);
         will-change: transform;
         z-index: 4;
+        transition: transform .42s cubic-bezier(.34,1.4,.64,1), box-shadow .2s ease;
+      }
+
+      /* disable transition while dragging — re-enabled on release for spring snap */
+      .slide-reserve.is-dragging .slide-thumb,
+      .slide-reserve.is-dragging .slide-track {
+        transition: none !important;
       }
 
       .slide-reserve.is-complete .slide-thumb {
         box-shadow: 0 8px 32px rgba(182,255,0,.55), inset 0 1px 0 rgba(255,255,255,.6);
+      }
+
+      .slide-reserve .slide-track {
+        transition: transform .42s cubic-bezier(.34,1.4,.64,1);
       }
 
       .slide-reserve .slide-label,
@@ -1000,125 +1011,97 @@
 
     if (window.matchMedia('(pointer: coarse)').matches) {
       document.querySelectorAll('[data-slide-link]').forEach((button) => {
-        const thumb  = button.querySelector('.slide-thumb');
-        const track  = button.querySelector('.slide-track');
-        const label  = button.querySelector('.default-cta');
+        const thumb = button.querySelector('.slide-thumb');
+        const track = button.querySelector('.slide-track');
+        const label = button.querySelector('.default-cta');
         if (!thumb || !track) return;
 
-        const PAD = 6;
-        const SPRING_K  = 0.19;   // stiffness
-        const SPRING_D  = 0.72;   // damping
-        const RUBBER    = 0.28;   // resistance past maxX
+        const PAD    = 6;
+        const RUBBER = 0.25;
 
-        let posX     = 0;    // rendered position
-        let velX     = 0;    // spring velocity
-        let targetX  = 0;    // where pointer wants us
-        let dragging = false;
-        let snapping = false;
-        let done     = false;
-        let startX   = 0;
-        let maxX     = 0;
-        let thumbW   = 0;
-        let btnW     = 0;
-        let rafId    = null;
+        let posX    = 0;
+        let startX  = 0;
+        let maxX    = 0;
+        let thumbW  = 0;
+        let btnW    = 0;
+        let active  = false;
+        let done    = false;
+        let rafId   = null;
+        let pendingX = 0;
 
-        /* ── render: ONE place that writes to DOM ── */
-        const render = () => {
+        const writeDOM = () => {
           rafId = null;
-
-          if (dragging) {
-            posX = targetX;
-          } else if (snapping) {
-            velX += (0 - posX) * SPRING_K;
-            velX *= SPRING_D;
-            posX += velX;
-            if (Math.abs(posX) < 0.4 && Math.abs(velX) < 0.4) {
-              posX = 0; velX = 0; snapping = false;
-              button.classList.remove('is-dragging');
-              if (label) label.style.opacity = '';
-              track.style.transform = 'scaleX(0)';
-              thumb.style.transform = 'translate3d(0,-50%,0)';
-              return;
-            }
-          }
-
-          const progress = btnW > 0 ? Math.min(1, (posX + thumbW + PAD) / btnW) : 0;
-          thumb.style.transform = `translate3d(${posX}px,-50%,0)${dragging ? ' scale(1.07)' : ''}`;
-          track.style.transform = `scaleX(${progress})`;
-          if (label) label.style.opacity = Math.max(0.12, 1 - (posX / (maxX || 1)) * 0.88);
-
-          if (snapping) rafId = requestAnimationFrame(render);
+          const pct = btnW > 0 ? Math.min(1, (posX + thumbW + PAD) / btnW) : 0;
+          thumb.style.transform = `translate3d(${posX}px,-50%,0)`;
+          track.style.transform = `scaleX(${pct})`;
+          if (label) label.style.opacity = Math.max(0.15, 1 - (posX / (maxX || 1)) * 0.85);
         };
 
-        const schedule = () => { if (!rafId) rafId = requestAnimationFrame(render); };
+        const scheduleWrite = () => {
+          if (!rafId) rafId = requestAnimationFrame(writeDOM);
+        };
 
-        /* ── complete ── */
+        const snapBack = () => {
+          posX = 0;
+          button.classList.remove('is-dragging');
+          thumb.style.transform = 'translate3d(0,-50%,0)';
+          track.style.transform = 'scaleX(0)';
+          if (label) label.style.opacity = '';
+        };
+
         const complete = () => {
           if (done) return;
           done = true;
-          snapping = false;
-          dragging = false;
           button.classList.remove('is-dragging');
           button.classList.add('is-complete');
           posX = maxX;
-          render();
-          if (navigator.vibrate) navigator.vibrate([8, 40, 14]);
-          setTimeout(() => { window.location.href = button.getAttribute('href'); }, 300);
+          writeDOM();
+          if (navigator.vibrate) navigator.vibrate([8, 50, 12]);
+          setTimeout(() => { window.location.href = button.getAttribute('href'); }, 320);
         };
 
-        /* ── events ── */
         button.addEventListener('click', (e) => { if (!done) e.preventDefault(); });
 
-        button.addEventListener('pointerdown', (e) => {
+        button.addEventListener('touchstart', (e) => {
           if (done) return;
-          e.preventDefault();
-          if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-          snapping = false;
           const rect = button.getBoundingClientRect();
           btnW   = rect.width;
           thumbW = thumb.offsetWidth;
           maxX   = btnW - thumbW - PAD * 2;
-          startX = e.clientX - posX;
-          dragging = true;
-          velX = 0;
+          startX = e.touches[0].clientX - posX;
+          active = true;
           button.classList.add('is-dragging');
-          button.setPointerCapture(e.pointerId);
           if (navigator.vibrate) navigator.vibrate(6);
-        });
+        }, { passive: true });
 
-        button.addEventListener('pointermove', (e) => {
-          if (!dragging) return;
-          const raw = e.clientX - startX;
-          if (raw > maxX) {
-            // rubber band resistance past end
-            targetX = maxX + (raw - maxX) * RUBBER;
-          } else {
-            targetX = Math.max(0, raw);
-          }
-          schedule();
-        });
+        button.addEventListener('touchmove', (e) => {
+          if (!active) return;
+          e.preventDefault(); // stop scroll — this is the key fix
+          const raw = e.touches[0].clientX - startX;
+          posX = raw > maxX
+            ? maxX + (raw - maxX) * RUBBER
+            : Math.max(0, raw);
+          scheduleWrite();
+        }, { passive: false });
 
-        const end = () => {
-          if (!dragging) return;
-          dragging = false;
-          if (posX >= maxX * 0.76) {
+        const onEnd = () => {
+          if (!active) return;
+          active = false;
+          if (posX >= maxX * 0.72) {
             complete();
           } else {
-            snapping = true;
-            velX = 0;
-            schedule();
+            snapBack();
           }
         };
 
-        button.addEventListener('pointerup', end);
-        button.addEventListener('pointercancel', end);
+        button.addEventListener('touchend',    onEnd, { passive: true });
+        button.addEventListener('touchcancel', onEnd, { passive: true });
 
-        // Reset when page is restored from bfcache (back/forward)
+        // Reset on back/forward navigation
         window.addEventListener('pageshow', (e) => {
           if (!e.persisted) return;
           if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-          posX = 0; velX = 0; targetX = 0;
-          dragging = false; snapping = false; done = false;
+          posX = 0; active = false; done = false;
           button.classList.remove('is-dragging', 'is-complete');
           if (label) label.style.opacity = '';
           track.style.transform = 'scaleX(0)';
