@@ -168,6 +168,12 @@
       transform: translateY(28px);
     }
 
+    /* Hero always visible — browser doesn't scroll past empty content */
+    #hero .section-reveal {
+      opacity: 1;
+      transform: none;
+    }
+
     .metal-card {
       position: relative;
       overflow: hidden;
@@ -451,7 +457,7 @@
   </header>
 
   <main class="relative z-10">
-    <section class="relative min-h-screen flex items-center">
+    <section id="hero" class="relative min-h-screen flex items-center">
       <div class="absolute inset-0 overflow-hidden pointer-events-none">
         <div class="spotlight top-[8%] left-[-10%]"></div>
         <div class="spotlight bottom-[-15%] right-[-10%]"></div>
