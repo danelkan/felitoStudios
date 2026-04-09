@@ -959,8 +959,8 @@
 
       const startDrag = (clientX) => {
         if (!isCoarsePointer || opened) return;
-        const bounds = track.getBoundingClientRect();
-        maxX = Math.max(0, bounds.width - thumb.offsetWidth);
+        const bounds = button.getBoundingClientRect();
+        maxX = Math.max(0, bounds.width - thumb.offsetWidth - 7);
         dragging = true;
         startX = clientX - currentX;
         button.classList.add('is-dragging');
