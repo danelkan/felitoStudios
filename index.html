@@ -1112,6 +1112,18 @@
 
         button.addEventListener('pointerup', end);
         button.addEventListener('pointercancel', end);
+
+        // Reset when page is restored from bfcache (back/forward)
+        window.addEventListener('pageshow', (e) => {
+          if (!e.persisted) return;
+          if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+          posX = 0; velX = 0; targetX = 0;
+          dragging = false; snapping = false; done = false;
+          button.classList.remove('is-dragging', 'is-complete');
+          if (label) label.style.opacity = '';
+          track.style.transform = 'scaleX(0)';
+          thumb.style.transform = 'translate3d(0,-50%,0)';
+        });
       });
     }
 
