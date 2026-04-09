@@ -1019,26 +1019,19 @@
         const PAD    = 6;
         const RUBBER = 0.25;
 
-        let posX    = 0;
-        let startX  = 0;
-        let maxX    = 0;
-        let thumbW  = 0;
-        let btnW    = 0;
-        let active  = false;
-        let done    = false;
-        let rafId   = null;
-        let pendingX = 0;
+        let posX   = 0;
+        let startX = 0;
+        let maxX   = 0;
+        let thumbW = 0;
+        let btnW   = 0;
+        let active = false;
+        let done   = false;
 
-        const writeDOM = () => {
-          rafId = null;
-          const pct = btnW > 0 ? Math.min(1, (posX + thumbW + PAD) / btnW) : 0;
-          thumb.style.transform = `translate3d(${posX}px,-50%,0)`;
+        const updateDOM = (x) => {
+          const pct = btnW > 0 ? Math.min(1, (x + thumbW + PAD) / btnW) : 0;
+          thumb.style.transform = `translate3d(${x}px,-50%,0)`;
           track.style.transform = `scaleX(${pct})`;
-          if (label) label.style.opacity = Math.max(0.15, 1 - (posX / (maxX || 1)) * 0.85);
-        };
-
-        const scheduleWrite = () => {
-          if (!rafId) rafId = requestAnimationFrame(writeDOM);
+          if (label) label.style.opacity = Math.max(0.15, 1 - (x / (maxX || 1)) * 0.85);
         };
 
         const snapBack = () => {
@@ -1055,7 +1048,7 @@
           button.classList.remove('is-dragging');
           button.classList.add('is-complete');
           posX = maxX;
-          writeDOM();
+          updateDOM(posX);
           if (navigator.vibrate) navigator.vibrate([8, 50, 12]);
           setTimeout(() => { window.location.href = button.getAttribute('href'); }, 320);
         };
@@ -1076,12 +1069,12 @@
 
         button.addEventListener('touchmove', (e) => {
           if (!active) return;
-          e.preventDefault(); // stop scroll — this is the key fix
+          e.preventDefault();
           const raw = e.touches[0].clientX - startX;
           posX = raw > maxX
             ? maxX + (raw - maxX) * RUBBER
             : Math.max(0, raw);
-          scheduleWrite();
+          updateDOM(posX); // directo, sin rAF — 1:1 con el dedo
         }, { passive: false });
 
         const onEnd = () => {
@@ -1100,7 +1093,6 @@
         // Reset on back/forward navigation
         window.addEventListener('pageshow', (e) => {
           if (!e.persisted) return;
-          if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
           posX = 0; active = false; done = false;
           button.classList.remove('is-dragging', 'is-complete');
           if (label) label.style.opacity = '';
