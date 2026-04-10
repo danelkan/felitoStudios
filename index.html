@@ -523,8 +523,8 @@
                   </div>
                 </div>
                 <!-- nav arrow -->
-                <button id="swipe-hint" onclick="goToSlide(sedeIndex === 0 ? 1 : 0)" class="absolute right-3 top-1/2 -translate-y-1/2 glass rounded-full w-9 h-9 flex items-center justify-center text-white/70 transition-opacity duration-300" aria-label="Cambiar sede">
-                  <svg id="arrow-icon" class="w-4 h-4 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                <button id="swipe-hint" class="absolute right-3 left-auto top-1/2 -translate-y-1/2 glass rounded-full w-9 h-9 flex items-center justify-center text-white/70 transition-all duration-300" aria-label="Cambiar sede">
+                  <svg id="arrow-icon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                 </button>
               </div>
               <!-- sede label + dots -->
@@ -1041,21 +1041,36 @@
     const sedeSlider = document.getElementById('sede-slider');
     const sedeTrack  = document.getElementById('sede-track');
     const sedeLabel  = document.getElementById('sede-label');
-    const swipeHint  = document.getElementById('swipe-hint');
+    const swipeBtn   = document.getElementById('swipe-hint');
     const sedeLabels = ['Sede Cordón', 'Sede Punta Carretas'];
     let sedeIndex = 0;
     let sliderStartX = 0;
     let sliderDragging = false;
 
-    window.goToSlide = function(i) {
+    function goToSlide(i) {
       sedeIndex = i;
       sedeTrack.style.transform = `translateX(-${i * 100}%)`;
       sedeLabel.textContent = sedeLabels[i];
       document.getElementById('dot-0').className = `w-2 h-2 rounded-full transition-all ${i === 0 ? 'bg-lime' : 'bg-white/25'}`;
       document.getElementById('dot-1').className = `w-2 h-2 rounded-full transition-all ${i === 1 ? 'bg-lime' : 'bg-white/25'}`;
-      const arrow = document.getElementById('arrow-icon');
-      if (arrow) arrow.style.transform = i === 0 ? '' : 'rotate(180deg)';
-    };
+      if (swipeBtn) {
+        // Move button: right on slide 0, left on slide 1
+        if (i === 0) {
+          swipeBtn.style.right = '0.75rem';
+          swipeBtn.style.left  = 'auto';
+          document.getElementById('arrow-icon').style.transform = '';
+        } else {
+          swipeBtn.style.left  = '0.75rem';
+          swipeBtn.style.right = 'auto';
+          document.getElementById('arrow-icon').style.transform = 'rotate(180deg)';
+        }
+      }
+    }
+    window.goToSlide = goToSlide;
+
+    if (swipeBtn) {
+      swipeBtn.addEventListener('click', () => goToSlide(sedeIndex === 0 ? 1 : 0));
+    }
 
     if (sedeSlider) {
       sedeSlider.addEventListener('touchstart', (e) => {
