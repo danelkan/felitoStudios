@@ -230,7 +230,7 @@
       z-index: 0;
     }
 
-    .liquid-btn > span {
+.liquid-btn > span {
       position: relative;
       z-index: 1;
       display: inline-flex;
@@ -443,8 +443,6 @@
       <nav class="hidden md:flex items-center gap-8 text-sm text-white/78">
         <a href="#servicios" class="hover:text-lime transition-colors" data-hover>Servicios</a>
         <a href="#barberos" class="hover:text-lime transition-colors" data-hover>Barberos</a>
-        <a href="#sedes" class="hover:text-lime transition-colors" data-hover>Sedes</a>
-        <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors" data-hover>Reservas</a>
         <a href="#reviews" class="hover:text-lime transition-colors" data-hover>Reseñas</a>
       </nav>
 
@@ -499,61 +497,45 @@
                   <span class="slide-hint">Deslizar</span>
                 </span>
               </a>
-              <a href="#servicios" class="glass rounded-full px-6 py-4 inline-flex items-center justify-center gap-3 text-white/84 hover:text-white transition-all magnetic" data-hover>
-                <i data-lucide="arrow-down-right" class="w-4 h-4"></i>
-                Ver servicios
+              <a href="https://www.instagram.com/felitobarberia?igsh=MWd6NGMwaDgwdTN1Yg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-6 py-4 inline-flex items-center justify-center gap-3 text-white/84 hover:text-white transition-all magnetic" data-hover>
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                Instagram
               </a>
             </div>
 
-            <div class="section-reveal mt-12 grid sm:grid-cols-3 gap-4 max-w-3xl">
-              <div class="glass rounded-3xl p-5">
-                <div class="text-3xl font-display text-acid">5.0★</div>
-                <div class="text-sm text-white/60 mt-1">Reputación destacada</div>
-              </div>
-              <div class="glass rounded-3xl p-5">
-                <div class="text-3xl font-display text-metal">2</div>
-                <div class="text-sm text-white/60 mt-1">Sedes en Montevideo</div>
-              </div>
-              <div class="glass rounded-3xl p-5">
-                <div class="text-3xl font-display text-metal">Online</div>
-                <div class="text-sm text-white/60 mt-1">Reservas rápidas</div>
-              </div>
-            </div>
           </div>
 
+          <!-- Slider de sedes -->
           <div class="section-reveal">
             <div class="glass rounded-[2rem] p-3 md:p-4 shadow-metal metal-card">
-              <div class="image-mask aspect-[4/5] bg-white/5 rounded-[1.6rem]">
-                <img src="img/optimized/local-exterior.jpg" alt="Felito Barber Studio — local" style="object-position: left center;" loading="eager" fetchpriority="high" />
-              </div>
-              <div class="grid grid-cols-2 gap-3 mt-3">
-                <div class="glass rounded-2xl p-4">
-                  <div class="text-xs uppercase tracking-[0.25em] text-white/50">Signature</div>
-                  <div class="mt-2 font-medium">Fades, taper y detalle fino</div>
+              <!-- slider wrapper -->
+              <div id="sede-slider" class="relative overflow-hidden rounded-[1.6rem]" style="touch-action:pan-y;">
+                <div id="sede-track" class="flex transition-transform duration-500 ease-[cubic-bezier(.25,.46,.45,.94)]" style="will-change:transform;">
+                  <div class="shrink-0 w-full">
+                    <div class="image-mask aspect-[4/5] bg-white/5 rounded-[1.6rem]">
+                      <img src="img/optimized/local-exterior.jpg" alt="Sede Cordón" style="object-position: left center;" loading="eager" fetchpriority="high" />
+                    </div>
+                  </div>
+                  <div class="shrink-0 w-full">
+                    <div class="image-mask aspect-[4/5] bg-white/5 rounded-[1.6rem]">
+                      <img src="img/punta-carretas.jpg" alt="Sede Punta Carretas" style="object-position: center center;" loading="lazy" />
+                    </div>
+                  </div>
                 </div>
-                <div class="glass rounded-2xl p-4">
-                  <div class="text-xs uppercase tracking-[0.25em] text-white/50">Studio feel</div>
-                  <div class="mt-2 font-medium">Ambiente moderno y profesional</div>
+                <!-- swipe hint arrow -->
+                <div id="swipe-hint" class="absolute right-3 top-1/2 -translate-y-1/2 glass rounded-full w-9 h-9 flex items-center justify-center text-white/70 pointer-events-none transition-opacity duration-300">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+              </div>
+              <!-- sede label + dots -->
+              <div class="mt-3 flex items-center justify-between px-1">
+                <div class="text-xs uppercase tracking-[0.3em] text-white/80 font-medium" id="sede-label">Sede Cordón</div>
+                <div class="flex gap-2">
+                  <button id="dot-0" onclick="goToSlide(0)" class="w-2 h-2 rounded-full bg-lime transition-all" aria-label="Cordón"></button>
+                  <button id="dot-1" onclick="goToSlide(1)" class="w-2 h-2 rounded-full bg-white/25 transition-all" aria-label="Punta Carretas"></button>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="py-14 md:py-20 relative">
-      <div class="max-w-7xl mx-auto px-6 md:px-8">
-        <div class="divider mb-14"></div>
-        <div class="grid lg:grid-cols-[.9fr_1.1fr] gap-10 items-start">
-          <div class="section-reveal">
-            <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Manifiesto</span>
-            <h2 class="mt-4 text-4xl md:text-6xl font-display max-w-xl">
-              Más que una barbería, una experiencia de estilo.
-            </h2>
-          </div>
-          <div class="section-reveal glass rounded-[2rem] p-8 md:p-10 text-white/72 leading-relaxed text-lg">
-            Felito Barber Studio proyecta una identidad sobria, precisa y contemporánea. Cada servicio está pensado para elevar la imagen personal con criterio estético, técnica sólida y una atención que transmite confianza desde el primer contacto.
           </div>
         </div>
       </div>
@@ -645,106 +627,6 @@
             </div>
           </div>
 
-        </div>
-      </div>
-    </section>
-
-    <section id="sedes" class="py-14 md:py-20 relative">
-      <div class="max-w-7xl mx-auto px-6 md:px-8">
-        <div class="section-reveal mb-14">
-          <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Sedes</span>
-          <h2 class="mt-4 text-4xl md:text-6xl font-display">Dos ubicaciones. Misma excelencia.</h2>
-        </div>
-
-        <div class="grid lg:grid-cols-2 gap-6">
-          <article class="section-reveal glass metal-card rounded-[2rem] p-8 md:p-10">
-            <div class="flex items-start justify-between gap-6">
-              <div>
-                <div class="text-xs uppercase tracking-[0.35em] text-lime/80">Sede 01</div>
-                <h3 class="mt-4 text-3xl font-display">Cordón</h3>
-                <p class="mt-4 text-white/65 text-lg">José Enrique Rodó 1969</p>
-              </div>
-              <div class="glass rounded-2xl px-4 py-3 text-sm">5.0 ★</div>
-            </div>
-            <div class="divider my-8"></div>
-            <p class="text-white/60 leading-relaxed">Una ubicación estratégica para quienes buscan una experiencia premium en el corazón de la ciudad, con reservas ágiles y atención consistente.</p>
-            <div class="mt-8 flex flex-wrap gap-4">
-              <a href="https://book.weibook.co/branch/felito-barber-studio-sede-1" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover><span>Reservar en Cordón</span></a>
-              <a href="https://maps.app.goo.gl/GP3hRJw9NedJgwLM9" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-5 py-4 inline-flex items-center gap-3 magnetic" data-hover>
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Ver mapa
-              </a>
-            </div>
-          </article>
-
-          <article class="section-reveal glass metal-card rounded-[2rem] p-8 md:p-10">
-            <div class="flex items-start justify-between gap-6">
-              <div>
-                <div class="text-xs uppercase tracking-[0.35em] text-lime/80">Sede 02</div>
-                <h3 class="mt-4 text-3xl font-display">Punta Carretas</h3>
-                <p class="mt-4 text-white/65 text-lg">Luis Franzini 938</p>
-              </div>
-              <div class="glass rounded-2xl px-4 py-3 text-sm">5.0 ★</div>
-            </div>
-            <div class="divider my-8"></div>
-            <p class="text-white/60 leading-relaxed">Pensada para un público que valora el diseño, la prolijidad y un servicio de grooming alineado con una estética urbana sofisticada.</p>
-            <div class="mt-8 flex flex-wrap gap-4">
-              <a href="https://book.weibook.co/branch/felito-barber-studio-punta-carretas" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover><span>Reservar en Punta Carretas</span></a>
-              <a href="https://maps.app.goo.gl/7zQtRn3iibWjNiWW7" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-5 py-4 inline-flex items-center gap-3 magnetic" data-hover>
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg> Ver mapa
-              </a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section id="reserva" class="py-14 md:py-20 relative">
-      <div class="max-w-7xl mx-auto px-6 md:px-8">
-        <div class="grid lg:grid-cols-[1fr_.9fr] gap-8 items-stretch">
-          <div class="section-reveal glass rounded-[2rem] p-8 md:p-12 relative">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(182,255,0,.12),transparent_34%)]"></div>
-            <div class="relative z-10">
-              <span class="text-xs uppercase tracking-[0.35em] text-lime/80">Reservas</span>
-              <h2 class="mt-4 text-4xl md:text-6xl font-display max-w-2xl">Reservá tu turno en segundos.</h2>
-              <p class="mt-6 max-w-2xl text-lg text-white/66 leading-relaxed">
-                Integración pensada para dirigir al usuario a la plataforma de reservas, donde puede consultar disponibilidad en tiempo real, elegir barbero y gestionar su cita con fluidez.
-              </p>
-
-              <div class="mt-10 grid sm:grid-cols-3 gap-4">
-                <div class="glass rounded-2xl p-5">
-                  <div class="text-sm uppercase tracking-[0.25em] text-white/45">01</div>
-                  <div class="mt-2 font-medium">Elegí sede</div>
-                </div>
-                <div class="glass rounded-2xl p-5">
-                  <div class="text-sm uppercase tracking-[0.25em] text-white/45">02</div>
-                  <div class="mt-2 font-medium">Seleccioná barbero</div>
-                </div>
-                <div class="glass rounded-2xl p-5">
-                  <div class="text-sm uppercase tracking-[0.25em] text-white/45">03</div>
-                  <div class="mt-2 font-medium">Confirmá tu turno</div>
-                </div>
-              </div>
-
-              <div class="mt-10 flex flex-col sm:flex-row gap-4">
-                <a href="https://book.weibook.co/felito-barber-studio" target="_blank" rel="noopener noreferrer" class="liquid-btn magnetic" data-hover>
-                  <span>
-                    <i data-lucide="calendar-plus-2" class="w-4 h-4"></i>
-                    Abrir reservas
-                  </span>
-                </a>
-                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-6 py-4 inline-flex items-center justify-center gap-3 magnetic" data-hover>
-                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-                  Ver Instagram
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <div class="section-reveal glass rounded-[2rem] p-4 md:p-5 shadow-metal">
-            <div class="image-mask rounded-[1.5rem] aspect-[4/5]">
-              <img src="img/optimized/screen-reservas.jpg" alt="Sistema de reservas Felito" loading="lazy" />
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -857,8 +739,9 @@
             </span>
           </a>
 
-          <a href="#sedes" class="glass rounded-full px-7 py-4 text-sm font-medium text-white/70 hover:text-white transition-colors magnetic" data-hover>
-            Ver sedes →
+          <a href="https://www.instagram.com/felitobarberia?igsh=MWd6NGMwaDgwdTN1Yg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" class="glass rounded-full px-7 py-4 text-sm font-medium text-white/70 hover:text-white inline-flex items-center gap-3 transition-colors magnetic" data-hover>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+            Instagram
           </a>
         </div>
       </div>
@@ -912,7 +795,7 @@
             <div class="text-xs uppercase tracking-[0.3em] text-white/30 mb-4">Contacto</div>
             <ul class="space-y-3 text-sm text-white/55">
               <li>
-                <a href="https://www.instagram.com/felitobarber" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors inline-flex items-center gap-2" data-hover>
+                <a href="https://www.instagram.com/felitobarberia?igsh=MWd6NGMwaDgwdTN1Yg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" class="hover:text-lime transition-colors inline-flex items-center gap-2" data-hover>
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
                   Instagram
                 </a>
@@ -1156,6 +1039,50 @@
         paper.view.viewSize = new paper.Size(window.innerWidth, window.innerHeight);
       });
     }
+    // ── Sede slider ──────────────────────────────────────────────
+    const sedeSlider = document.getElementById('sede-slider');
+    const sedeTrack  = document.getElementById('sede-track');
+    const sedeLabel  = document.getElementById('sede-label');
+    const swipeHint  = document.getElementById('swipe-hint');
+    const sedeLabels = ['Sede Cordón', 'Sede Punta Carretas'];
+    let sedeIndex = 0;
+    let sliderStartX = 0;
+    let sliderDragging = false;
+
+    window.goToSlide = function(i) {
+      sedeIndex = i;
+      sedeTrack.style.transform = `translateX(-${i * 100}%)`;
+      sedeLabel.textContent = sedeLabels[i];
+      document.getElementById('dot-0').className = `w-2 h-2 rounded-full transition-all ${i === 0 ? 'bg-lime' : 'bg-white/25'}`;
+      document.getElementById('dot-1').className = `w-2 h-2 rounded-full transition-all ${i === 1 ? 'bg-lime' : 'bg-white/25'}`;
+      if (swipeHint) swipeHint.style.opacity = i === 0 ? '1' : '0';
+    };
+
+    if (sedeSlider) {
+      sedeSlider.addEventListener('touchstart', (e) => {
+        sliderStartX = e.touches[0].clientX;
+        sliderDragging = true;
+      }, { passive: true });
+      sedeSlider.addEventListener('touchend', (e) => {
+        if (!sliderDragging) return;
+        const diff = sliderStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) goToSlide(diff > 0 ? 1 : 0);
+        sliderDragging = false;
+      }, { passive: true });
+
+      // Mouse drag for desktop
+      sedeSlider.addEventListener('mousedown', (e) => {
+        sliderStartX = e.clientX; sliderDragging = true;
+      });
+      sedeSlider.addEventListener('mouseup', (e) => {
+        if (!sliderDragging) return;
+        const diff = sliderStartX - e.clientX;
+        if (Math.abs(diff) > 40) goToSlide(diff > 0 ? 1 : 0);
+        sliderDragging = false;
+      });
+    }
+    // ─────────────────────────────────────────────────────────────
+
     }); // end DOMContentLoaded
   </script>
 </body>
