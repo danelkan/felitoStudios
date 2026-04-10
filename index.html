@@ -45,12 +45,7 @@
 
   <style>
     :root {
-      --bg: #090909;
-      --panel: rgba(255,255,255,.05);
-      --stroke: rgba(255,255,255,.08);
       --text: #EBECE8;
-      --muted: #9BA2A8;
-      --accent: #B6FF00;
       --display-tracking: -0.04em;
       --display-leading: 1.06;
     }
@@ -92,7 +87,7 @@
       background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/></filter><rect width='180' height='180' filter='url(%23n)' opacity='.32'/></svg>");
     }
 
-    .cursor, .cursor-dot {
+    .cursor-dot {
       position: fixed;
       top: 0;
       left: 0;
@@ -101,32 +96,10 @@
       border-radius: 999px;
       mix-blend-mode: difference;
       will-change: transform;
-    }
-
-    .cursor {
-      width: 30px;
-      height: 30px;
-      border: 1px solid rgba(255,255,255,.95);
-      transform: translate(-50%, -50%);
-      transition: width .25s ease, height .25s ease, background .25s ease, border-color .25s ease;
-    }
-
-    .cursor.active {
-      width: 56px;
-      height: 56px;
-      background: rgba(255,255,255,.08);
-      border-color: rgba(182,255,0,.95);
-    }
-
-    .cursor-dot {
       width: 8px;
       height: 8px;
       background: rgba(255,255,255,.98);
       transform: translate(-50%, -50%);
-    }
-
-    .cursor {
-      display: none;
     }
 
     .glass {
@@ -299,15 +272,6 @@
       pointer-events: none;
     }
 
-    .logo-wordmark {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      letter-spacing: -0.06em;
-      line-height: 1.05;
-    }
-
-    .logo-wordmark .accent { color: #B6FF00; }
-
     canvas#liquid-bg {
       position: fixed;
       inset: 0;
@@ -430,7 +394,6 @@
   </style>
 </head>
 <body id="top" class="grain selection:bg-lime/20 selection:text-white">
-  <div class="cursor"></div>
   <div class="cursor-dot"></div>
   <canvas id="liquid-bg" resize></canvas>
 
@@ -821,11 +784,10 @@
     document.addEventListener('DOMContentLoaded', () => {
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
-    const cursor = document.querySelector('.cursor');
     const cursorDot = document.querySelector('.cursor-dot');
     let mouseX = window.innerWidth / 2;
     let mouseY = window.innerHeight / 2;
-    let dotX = mouseX, dotY = mouseY, ringX = mouseX, ringY = mouseY;
+    let dotX = mouseX, dotY = mouseY;
 
     window.addEventListener('mousemove', (e) => {
       mouseX = e.clientX;
@@ -833,21 +795,13 @@
     });
 
     function animateCursor() {
-      if (!cursor || !cursorDot) return;
+      if (!cursorDot) return;
       dotX += (mouseX - dotX) * 0.35;
       dotY += (mouseY - dotY) * 0.35;
-      ringX += (mouseX - ringX) * 0.18;
-      ringY += (mouseY - ringY) * 0.18;
       cursorDot.style.transform = `translate(${dotX}px, ${dotY}px) translate(-50%, -50%)`;
-      cursor.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
       requestAnimationFrame(animateCursor);
     }
     animateCursor();
-
-    document.querySelectorAll('[data-hover], a, button').forEach((el) => {
-      el.addEventListener('mouseenter', () => cursor && cursor.classList.add('active'));
-      el.addEventListener('mouseleave', () => cursor && cursor.classList.remove('active'));
-    });
 
     gsap.registerPlugin(ScrollTrigger);
 
